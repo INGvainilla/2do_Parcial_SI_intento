@@ -187,7 +187,7 @@ CREATE TABLE postulantes_grupos (
     postulante_id INT REFERENCES postulantes(id) ON DELETE CASCADE,
     grupo_id INT REFERENCES grupos(id) ON DELETE CASCADE,
     fecha_asignacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(postulante_id, gestion_id) -- Un postulante solo puede estar en 1 grupo por gestión
+    UNIQUE(postulante_id, grupo_id) -- Evita asignaciones duplicadas al mismo grupo
 );
 
 CREATE TABLE asignaciones_docentes (
@@ -281,6 +281,20 @@ CREATE TABLE conversaciones_chatbot (
     resuelta BOOLEAN DEFAULT FALSE,
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- ---------------------------------------------------------
+-- 7. ÍNDICES DE RENDIMIENTO
+-- ---------------------------------------------------------
+
+CREATE INDEX idx_postulantes_ci ON postulantes(ci);
+CREATE INDEX idx_postulantes_estado ON postulantes(estado);
+CREATE INDEX idx_postulantes_primera_opcion ON postulantes(primera_opcion_carrera_id);
+CREATE INDEX idx_postulantes_segunda_opcion ON postulantes(segunda_opcion_carrera_id);
+CREATE INDEX idx_examenes_postulante ON examenes(postulante_id);
+CREATE INDEX idx_resultados_materias_postulante ON resultados_materias(postulante_id);
+CREATE INDEX idx_postulantes_grupos_postulante ON postulantes_grupos(postulante_id);
+CREATE INDEX idx_pagos_postulante ON pagos(postulante_id);
+CREATE INDEX idx_notificaciones_usuario ON notificaciones(usuario_id);
 
 -- ==============================================================================
 -- DICCIONARIO Y EXPLICACIÓN DE RESTRICCIONES (CONSTRAINTS) Y PALABRAS CLAVE:

@@ -769,48 +769,56 @@ endif
 
 ---
 
-## Diagrama 3: Aplicación y Calificación de Exámenes (Proceso Manual Actual)
+## Diagrama 3: Aplicación y Calificación de Exámenes (Proceso Descentralizado Actual)
 
-**Herramientas Actuales:** Exámenes impresos, planillas de notas en papel, Excel para transcripción.
-**Problema Evidenciado:** Cálculo manual de promedios ponderados, riesgo de error en fórmulas, demora en publicación de resultados, no se enforce la regla de ≥60 por materia.
+**Herramientas Actuales:** Software de evaluación local, Bases de datos aisladas por laboratorio, Excel para consolidación.
+**Problema Evidenciado:** Bases de datos aisladas que requieren consolidación manual (copiar/pegar) en Excel, cálculo de promedios ponderados vulnerable a errores de fórmula humana, no se fuerza automáticamente la regla de ≥60 por materia, demora en consolidar y publicar resultados.
 
 ```plantuml
 @startuml DA03_AS_IS_Examenes
-title Situación Actual: Evaluación y Calificación del CUP (Procedimiento Manual)
+title Situación Actual: Evaluación y Calificación del CUP (Bases de Datos Aisladas)
 skinparam backgroundColor #FEFEFE
 
+|Postulante|
+|Laboratorio de Cómputo|
 |Docente|
 |Secretaría Académica|
 |Coordinador Académico|
-|Base de Datos Excel (Aislada)|
 
-|Docente|
+|Postulante|
 start
-:Aplica examen impreso
-a su grupo (70 estudiantes);
-:Corrige exámenes a mano;
-:Registra notas en planilla
-de papel firmada;
-:Entrega planilla física
-a Secretaría;
+:Rinde examen en computadora
+del laboratorio asignado;
+
+|Laboratorio de Cómputo|
+:Califica automáticamente
+el examen;
+:Guarda la nota en la
+Base de Datos Local;
 note right
-  Falla Actual: Cada docente
-  tiene su propio formato de
-  planilla. No hay estándar.
+  Falla Actual: Cada laboratorio
+  tiene una BD local aislada.
+  No hay conexión en red con el
+  sistema central de Secretaría.
 end note
 
+|Docente|
+:Exporta resultados de la
+BD Local a un archivo CSV/Excel;
+:Entrega archivo digital (USB o correo)
+a Secretaría Académica;
+
 |Secretaría Académica|
-:Recibe planillas de papel
-de todos los docentes;
-:Abre Excel "NOTAS_CUP.xlsx";
-:Transcribe nota por nota
-manualmente;
+:Recibe múltiples archivos
+de distintos laboratorios;
+:Abre Excel principal "NOTAS_CUP.xlsx";
+:Copia y pega (consolida)
+los datos de todos los archivos;
 note right
-  Falla Actual: Con 1000
-  estudiantes × 4 materias × 3
-  exámenes = 12,000 notas que
-  transcribir manualmente.
-  Alto riesgo de error.
+  Falla Actual: El copiado y pegado
+  masivo desde múltiples fuentes
+  genera pérdida o duplicación
+  de notas accidentalmente.
 end note
 
 :Crea fórmula de promedio
@@ -837,15 +845,13 @@ note right
   aplican ≥60 al promedio general
   de las 4 materias, NO a cada
   materia individual. La política
-  de negocio no está enforced.
+  de negocio no se cumple.
 end note
 
 :Genera lista de aprobados
 y reprobados;
-
-|Base de Datos Excel (Aislada)|
-:Archivo "NOTAS_CUP.xlsx"
-guardado localmente;
+:Guarda Excel consolidado
+localmente;
 
 |Coordinador Académico|
 :Recibe Excel consolidado;
@@ -854,10 +860,9 @@ guardado localmente;
 tablón de anuncios físico;
 note right
   Falla Actual: Los resultados
-  pueden demorar días en
-  publicarse. Los postulantes
-  no tienen canal digital
-  para consultarlos.
+  demoran días en publicarse.
+  Los postulantes no tienen canal
+  digital para consultarlos.
 end note
 stop
 @enduml
@@ -952,7 +957,6 @@ skinparam backgroundColor #FEFEFE
 
 |Autoridad de la FICCT|
 |Secretaría Académica|
-|Base de Datos Excel (Aislada)|
 
 |Autoridad de la FICCT|
 start
@@ -1029,18 +1033,18 @@ stop
 
 Los cinco diagramas de actividad presentados evidencian las siguientes **fallas sistémicas** en el proceso actual de admisión del CUP:
 
-| #   | Falla Identificada                                         | Diagramas donde se evidencia | Impacto                                |
-| --- | ---------------------------------------------------------- | ---------------------------- | -------------------------------------- |
-| F1  | Inexistencia de un sistema de información integrado        | Todos (DA01-DA05)            | Fragmentación total de datos           |
-| F2  | Transcripción manual tardía y propensa a errores           | DA01, DA03, DA05             | Errores de digitación, duplicados      |
-| F3  | Pagos sin vinculación digital al expediente del postulante | DA01                         | Pérdida de trazabilidad financiera     |
-| F4  | Cálculo manual de grupos sin verificación de conflictos    | DA02                         | Retrasos en inicio del CUP             |
-| F5  | Calificación de 12,000+ notas por transcripción manual     | DA03                         | Alto riesgo de error, demoras          |
-| F6  | Regla de negocio (≥60/materia) no enforced sistémicamente  | DA03                         | Aprobaciones/reprobaciones incorrectas |
-| F7  | Asignación de carreras sin control automático de cupos     | DA04                         | Sobre/sub-asignación de cupos          |
-| F8  | Reportes compilados de archivos no conectados              | DA05                         | Datos inconsistentes, desactualizados  |
-| F9  | Postulante sin canal digital de consulta                   | DA01, DA03, DA04             | Saturación de ventanillas, ansiedad    |
-| F10 | Comunicación informal (tablón de anuncios, ventanilla)     | DA04, DA05                   | Información inoportuna, limitada       |
+| #   | Falla Identificada                                         | Diagramas donde se evidencia | Impacto                                  |
+| --- | ---------------------------------------------------------- | ---------------------------- | ---------------------------------------- |
+| F1  | Inexistencia de un sistema de información integrado        | Todos (DA01-DA05)            | Fragmentación total de datos             |
+| F2  | Transcripción manual tardía y propensa a errores           | DA01, DA03, DA05             | Errores de digitación, duplicados        |
+| F3  | Pagos sin vinculación digital al expediente del postulante | DA01                         | Pérdida de trazabilidad financiera       |
+| F4  | Cálculo manual de grupos sin verificación de conflictos    | DA02                         | Retrasos en inicio del CUP               |
+| F5  | Consolidación manual de 12,000+ notas desde BDs locales    | DA03                         | Alto riesgo de pérdida de datos, demoras |
+| F6  | Regla de negocio (≥60/materia) no enforced sistémicamente  | DA03                         | Aprobaciones/reprobaciones incorrectas   |
+| F7  | Asignación de carreras sin control automático de cupos     | DA04                         | Sobre/sub-asignación de cupos            |
+| F8  | Reportes compilados de archivos no conectados              | DA05                         | Datos inconsistentes, desactualizados    |
+| F9  | Postulante sin canal digital de consulta                   | DA01, DA03, DA04             | Saturación de ventanillas, ansiedad      |
+| F10 | Comunicación informal (tablón de anuncios, ventanilla)     | DA04, DA05                   | Información inoportuna, limitada         |
 
 **Conclusión del diagnóstico AS-IS:** Las 10 fallas identificadas se derivan directa o indirectamente de una sola causa raíz: **la ausencia de un sistema de información integrado y centralizado** para la gestión del CUP. El sistema propuesto resolverá la totalidad de estas fallas mediante la digitalización, automatización y centralización de todos los procesos en una única plataforma web accesible desde cualquier dispositivo con conexión a internet.
 
@@ -1120,47 +1124,78 @@ Derivados estrictamente del bloque de alcance del proyecto (sección 1.4) y de l
 
 Siguiendo las directrices del **Proceso Unificado de Desarrollo de Software (Jacobson, Booch, Rumbaugh)**, la construcción del modelo priorizó la mitigación de riesgos arquitectónicos (Architecture-Centric). El flujo de trabajo divide los 23 Casos de Uso en **2 Ciclos Iterativos Incrementales**, alineados con las fechas de presentación establecidas por la cátedra:
 
-| # CU | Caso de Uso                            | Prioridad | Ciclo | Justificación                                                              |
-| ---- | -------------------------------------- | --------- | ----- | -------------------------------------------------------------------------- |
-| CU01 | Iniciar Sesión                         | Alta      | 1     | Sin autenticación no existe sistema; riesgo arquitectónico fundacional     |
-| CU02 | Cerrar Sesión                          | Alta      | 1     | Complemento obligatorio de seguridad de CU01                               |
-| CU03 | Recuperar Contraseña                   | Media     | 1     | Dependencia directa de la infraestructura de autenticación                 |
-| CU04 | Gestionar Perfiles de Usuario          | Alta      | 1     | Sin gestión de roles, no hay segregación de accesos                        |
-| CU05 | Registrar Postulante                   | Alta      | 1     | Caso de uso central del negocio; sin postulantes no hay CUP                |
-| CU06 | Verificar Requisitos Documentales      | Alta      | 1     | Precondición obligatoria para el pago (regla de negocio)                   |
-| CU07 | Procesar Pago (Stripe)                 | Alta      | 1     | Formaliza la inscripción; dependencia de servicio externo crítico          |
-| CU08 | Detectar Postulante Recurrente         | Media     | 1     | Previene duplicados; afecta integridad de datos desde el inicio            |
-| CU09 | Buscar Postulantes                     | Media     | 1     | Operación básica de consulta para todos los actores                        |
-| CU10 | Calcular y Crear Grupos                | Alta      | 1     | Algoritmo central: CEIL(inscritos/70); habilita la organización académica  |
-| CU11 | Asignar Postulantes a Grupos           | Alta      | 1     | Dependencia directa de CU10; completa el flujo de inscripción              |
-| CU12 | Asignar Docente a Grupo                | Alta      | 1     | Sin docentes asignados, no hay quién evalúe                                |
-| CU13 | Registrar Notas (Administrador)        | Alta      | 2     | Núcleo de la gestión académica del CUP                                     |
-| CU14 | Cargar Notas Masivas (CSV)             | Media     | 2     | Optimización operativa para volúmenes de 500-1000 estudiantes              |
-| CU15 | Calcular Promedio Ponderado            | Alta      | 2     | Regla de negocio central: ponderación 30%-30%-40%                          |
-| CU16 | Determinar Estado (Aprobado/Reprobado) | Alta      | 2     | Regla de negocio crítica: ≥60 por CADA materia individualmente             |
-| CU17 | Asignación de Carreras por Cupo        | Alta      | 2     | Lógica final de admisión; depende de CU16 completado                       |
-| CU18 | Configurar Cupos por Carrera           | Media     | 2     | Prerrequisito configurable de CU17                                         |
-| CU19 | Reporte Estructurado                   | Alta      | 2     | Entregable obligatorio de visibilidad para autoridades                     |
-| CU20 | Reporte Dinámico                       | Media     | 2     | Extensión de CU19 con filtros interactivos                                 |
-| CU21 | Reporte por Voz (IA)                   | Baja      | 2     | Funcionalidad diferenciadora; depende de servicio externo                  |
-| CU22 | Dashboard Estadístico                  | Alta      | 2     | Panel consolidado para toma de decisiones                                  |
-| CU23 | Realizar Simulacro                     | Baja      | 1     | Funcionalidad de práctica para el postulante; no afecta evaluación oficial |
+| # CU | Caso de Uso                            | Prioridad |
+| ---- | -------------------------------------- | --------- |
+| CU01 | Iniciar Sesión                         | Alta      |
+| CU02 | Cerrar Sesión                          | Alta      |
+| CU03 | Recuperar Contraseña                   | Media     |
+| CU04 | Gestionar Perfiles de Usuario          | Alta      |
+| CU05 | Registrar Postulante                   | Alta      |
+| CU06 | Verificar Requisitos Documentales      | Alta      |
+| CU07 | Procesar Pago (Stripe)                 | Alta      |
+| CU08 | Detectar Postulante Recurrente         | Media     |
+| CU09 | Buscar Postulantes                     | Media     |
+| CU10 | Calcular y Crear Grupos                | Alta      |
+| CU11 | Asignar Postulantes a Grupos           | Alta      |
+| CU12 | Asignar Docente a Grupo                | Alta      |
+| CU13 | Registrar Notas (Individual)           | Media     |
+| CU14 | Cargar Notas Masivas (CSV)             | Alta      |
+| CU15 | Calcular Promedio Ponderado            | Alta      |
+| CU16 | Determinar Estado (Aprobado/Reprobado) | Alta      |
+| CU17 | Asignación de Carreras por Cupo        | Alta      |
+| CU18 | Configurar Cupos por Carrera           | Media     |
+| CU19 | Reporte Estructurado                   | Alta      |
+| CU20 | Reporte Dinámico                       | Media     |
+| CU21 | Reporte por Voz (IA)                   | Baja      |
+| CU22 | Dashboard Estadístico                  | Alta      |
+| CU23 | Realizar Simulacro                     | Baja      |
 
 ### Distribución por Ciclo
 
-**Ciclo #1 — Arquitectura Base, Autenticación e Inscripción (Presentación 1 — 31 de mayo)**
+**Ciclo #1 — Arquitectura Base, Autenticación e Inscripción**
 
-> **Justificación (PUDS):** Mitiga el riesgo arquitectónico fundacional. Sin seguridad, registro de postulantes y organización de grupos, no existe proceso de admisión operable. Este ciclo implementa la columna vertebral del sistema.
+> **Justificación (PUDS) / Contexto:** Mitiga el riesgo arquitectónico fundacional. Sin seguridad, registro de postulantes y organización de grupos, no existe proceso de admisión operable. Este ciclo implementa la columna vertebral del sistema.
 
 - **Actores Implicados:** Administrador, Coordinador, Postulante, Pasarela Stripe.
-- **Casos de Uso:** CU01, CU02, CU03, CU04, CU05, CU06, CU07, CU08, CU09, CU10, CU11, CU12, CU23 (13 CU).
 
-**Ciclo #2 — Gestión Académica, Reportes y Admisión (Presentación 2 — 9 de junio)**
+**Casos de Uso del Ciclo #1:**
 
-> **Justificación (PUDS):** Construye sobre la base arquitectónica estable del Ciclo 1. Implementa la lógica de evaluación, las reglas de negocio de aprobación, la asignación final de carreras y la capa de inteligencia analítica.
+| # CU | Caso de Uso                       | Prioridad | Justificación en el Ciclo                                                  |
+| ---- | --------------------------------- | --------- | -------------------------------------------------------------------------- |
+| CU01 | Iniciar Sesión                    | Alta      | Sin autenticación no existe sistema; riesgo arquitectónico fundacional     |
+| CU02 | Cerrar Sesión                     | Alta      | Complemento obligatorio de seguridad de CU01                               |
+| CU03 | Recuperar Contraseña              | Media     | Dependencia directa de la infraestructura de autenticación                 |
+| CU04 | Gestionar Perfiles de Usuario     | Alta      | Sin gestión de roles, no hay segregación de accesos                        |
+| CU05 | Registrar Postulante              | Alta      | Caso de uso central del negocio; sin postulantes no hay CUP                |
+| CU06 | Verificar Requisitos Documentales | Alta      | Precondición obligatoria para el pago (regla de negocio)                   |
+| CU07 | Procesar Pago (Stripe)            | Alta      | Formaliza la inscripción; dependencia de servicio externo crítico          |
+| CU08 | Detectar Postulante Recurrente    | Media     | Previene duplicados; afecta integridad de datos desde el inicio            |
+| CU09 | Buscar Postulantes                | Media     | Operación básica de consulta para todos los actores                        |
+| CU10 | Calcular y Crear Grupos           | Alta      | Algoritmo central: CEIL(inscritos/70); habilita la organización académica  |
+| CU11 | Asignar Postulantes a Grupos      | Alta      | Dependencia directa de CU10; completa el flujo de inscripción              |
+| CU12 | Asignar Docente a Grupo           | Alta      | Sin docentes asignados, no hay quién evalúe                                |
+| CU23 | Realizar Simulacro                | Baja      | Funcionalidad de práctica para el postulante; no afecta evaluación oficial |
+
+**Ciclo #2 — Gestión Académica, Reportes y Admisión**
+
+> **Justificación (PUDS) / Contexto:** Construye sobre la base arquitectónica estable del Ciclo 1. Implementa la lógica de evaluación, las reglas de negocio de aprobación, la asignación final de carreras y la capa de inteligencia analítica.
 
 - **Actores Implicados:** Docente, Coordinador, Administrador, Servicio de IA.
-- **Casos de Uso:** CU13, CU14, CU15, CU16, CU17, CU18, CU19, CU20, CU21, CU22 (10 CU).
+
+**Casos de Uso del Ciclo #2:**
+
+| # CU | Caso de Uso                            | Prioridad | Justificación en el Ciclo                                      |
+| ---- | -------------------------------------- | --------- | -------------------------------------------------------------- |
+| CU13 | Registrar Notas (Individual)           | Media     | Mecanismo de excepción para correcciones de calificaciones     |
+| CU14 | Cargar Notas Masivas (CSV)             | Alta      | Mecanismo principal de integración con BDs de laboratorios     |
+| CU15 | Calcular Promedio Ponderado            | Alta      | Regla de negocio central: ponderación 30%-30%-40%              |
+| CU16 | Determinar Estado (Aprobado/Reprobado) | Alta      | Regla de negocio crítica: ≥60 por CADA materia individualmente |
+| CU17 | Asignación de Carreras por Cupo        | Alta      | Lógica final de admisión; depende de CU16 completado           |
+| CU18 | Configurar Cupos por Carrera           | Media     | Prerrequisito configurable de CU17                             |
+| CU19 | Reporte Estructurado                   | Alta      | Entregable obligatorio de visibilidad para autoridades         |
+| CU20 | Reporte Dinámico                       | Media     | Extensión de CU19 con filtros interactivos                     |
+| CU21 | Reporte por Voz (IA)                   | Baja      | Funcionalidad diferenciadora; depende de servicio externo      |
+| CU22 | Dashboard Estadístico                  | Alta      | Panel consolidado para toma de decisiones                      |
 
 ---
 
@@ -1242,6 +1277,24 @@ CU02 ..> Destruir : <<include>>
 
 #### CU03: Recuperar Contraseña por Correo Electrónico
 
+**A. Estructura del Modelo de CU (Diagrama Específico)**
+
+```plantuml
+@startuml
+left to right direction
+actor "Usuario Registrado" as Usuario
+actor "Servicio SMTP (Correo)" as SMTP
+rectangle "Sistema CUP - FICCT" {
+  usecase "CU03: Recuperar Contraseña" as CU03
+  usecase "Enviar Correo (Link REST)" as Enviar
+}
+Usuario --> CU03
+CU03 --> SMTP
+CU03 ..> Enviar : <<include>>
+@enduml
+```
+
+
 **B. Ficha de Especificación del Caso de Uso**
 
 | Campo               | Descripción                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
@@ -1259,6 +1312,28 @@ CU02 ..> Destruir : <<include>>
 ---
 
 #### CU04: Gestionar Perfiles de Usuario (CRUD por Administrador)
+
+**A. Estructura del Modelo de CU (Diagrama Específico)**
+
+```plantuml
+@startuml
+left to right direction
+actor "Administrador del Sistema" as Admin
+rectangle "Sistema CUP - FICCT" {
+  usecase "CU04: Gestionar Perfiles" as CU04
+  usecase "Crear Perfil" as Crear
+  usecase "Modificar Perfil" as Modificar
+  usecase "Desactivar Perfil (Soft Delete)" as Desactivar
+  usecase "Consultar Perfiles" as Consultar
+}
+Admin --> CU04
+CU04 ..> Crear : <<include>>
+CU04 ..> Modificar : <<include>>
+CU04 ..> Desactivar : <<include>>
+CU04 ..> Consultar : <<include>>
+@enduml
+```
+
 
 **B. Ficha de Especificación del Caso de Uso**
 
@@ -1313,6 +1388,28 @@ CU05 ..> CU06 : <<include>>
 
 #### CU06: Verificar Requisitos Automáticamente (BD Externa SEGIP/SEDUCA)
 
+**A. Estructura del Modelo de CU (Diagrama Específico)**
+
+```plantuml
+@startuml
+left to right direction
+actor "Sistema" as Sistema
+actor "API SEGIP" as SEGIP
+actor "API SEDUCA" as SEDUCA
+rectangle "Sistema CUP - FICCT" {
+  usecase "CU06: Verificar Requisitos" as CU06
+  usecase "Consultar Identidad (SEGIP)" as Identidad
+  usecase "Consultar Datos Académicos (SEDUCA)" as Academico
+}
+Sistema --> CU06
+CU06 --> SEGIP
+CU06 --> SEDUCA
+CU06 ..> Identidad : <<include>>
+CU06 ..> Academico : <<include>>
+@enduml
+```
+
+
 **B. Ficha de Especificación del Caso de Uso**
 
 | Campo               | Descripción                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
@@ -1366,6 +1463,22 @@ CU07 ..> CU06 : <<include>>
 
 #### CU08: Detectar Postulante Recurrente por CI
 
+**A. Estructura del Modelo de CU (Diagrama Específico)**
+
+```plantuml
+@startuml
+left to right direction
+actor "Sistema" as Sistema
+rectangle "Sistema CUP - FICCT" {
+  usecase "CU08: Detectar Recurrente" as CU08
+  usecase "Consultar BD (Postulantes)" as ConsultarBD
+}
+Sistema --> CU08
+CU08 ..> ConsultarBD : <<include>>
+@enduml
+```
+
+
 **B. Ficha de Especificación del Caso de Uso**
 
 | Campo               | Descripción                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
@@ -1383,6 +1496,26 @@ CU07 ..> CU06 : <<include>>
 ---
 
 #### CU09: Buscar y Consultar Postulantes (Filtros Avanzados)
+
+**A. Estructura del Modelo de CU (Diagrama Específico)**
+
+```plantuml
+@startuml
+left to right direction
+actor "Administrador" as Admin
+actor "Coordinador" as Coord
+actor "Docente" as Docente
+rectangle "Sistema CUP - FICCT" {
+  usecase "CU09: Buscar Postulantes" as CU09
+  usecase "Exportar Grilla (CSV/Excel)" as Exportar
+}
+Admin --> CU09
+Coord --> CU09
+Docente --> CU09
+CU09 <.. Exportar : <<extend>>
+@enduml
+```
+
 
 **B. Ficha de Especificación del Caso de Uso**
 
@@ -1444,6 +1577,23 @@ Inscritos = 1000 → CEIL(1000/70)= 15 grupos
 ---
 
 #### CU11: Asignar Postulantes a Grupos
+
+**A. Estructura del Modelo de CU (Diagrama Específico)**
+
+```plantuml
+@startuml
+left to right direction
+actor "Administrador" as Admin
+rectangle "Sistema CUP - FICCT" {
+  usecase "CU11: Asignar Postulantes a Grupos" as CU11
+  usecase "Asignación Automática (Balanceada)" as Auto
+  usecase "Asignación Manual (Individual)" as Manual
+}
+Admin --> CU11
+CU11 ..> Auto : <<include>>
+CU11 <.. Manual : <<extend>>
+@enduml
+```
 
 **B. Ficha de Especificación del Caso de Uso**
 
@@ -1552,17 +1702,17 @@ CU13 ..> CU15 : <<include>>
 
 **B. Ficha de Especificación del Caso de Uso**
 
-| Campo               | Descripción                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **CASO DE USO**     | CU13 — Registrar Notas de Examen por el Administrador (Individual).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| **PROPÓSITO**       | Permitir al Administrador registrar la calificación de cada examen (1, 2 o 3) para cada postulante, por materia.                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| **DESCRIPCIÓN**     | El Administrador selecciona un grupo, una materia y un número de examen (1, 2 o 3). El sistema despliega la lista de postulantes y permite ingresar la nota individual de cada uno. Las notas se validan en rango 0-100. Tras el registro de la nota, el sistema recalcula automáticamente el promedio ponderado de la materia (CU15).                                                                                                                                                                                                                 |
-| **ACTORES**         | Tablas de BD (`examenes`, `postulantes`, `asignaciones_grupo`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| **ACTOR INICIADOR** | Administrador del Sistema.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| **PRECONDICIÓN**    | Los postulantes deben estar asignados al grupo (CU11). No debe existir ya un registro para ese examen del mismo postulante y materia.                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| **FLUJO PRINCIPAL** | 1. El Administrador ingresa al módulo "Calificaciones". 2. Selecciona un grupo y materia. 3. El sistema despliega la lista de postulantes con columnas: Examen 1, Examen 2, Examen 3, Promedio Ponderado. 4. El Administrador selecciona el número de examen a calificar (1, 2 o 3). 5. Ingresa la nota (0-100) para cada postulante. 6. El sistema valida el rango en frontend y backend. 7. El sistema guarda la nota y ejecuta `<<include>> CU15`: recalcula el promedio ponderado. 8. El sistema actualiza visualmente la columna correspondiente. |
-| **POST CONDICIÓN**  | La nota queda registrada con auditoría (administrador, fecha, hora). El promedio ponderado se recalcula automáticamente.                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| **EXCEPCIONES**     | *E1: Nota fuera de rango.* "La nota debe estar entre 0 y 100". *E2: Examen ya calificado.* "Este examen ya fue registrado. Use la función de edición para modificarlo". *E3: 4° examen bloqueado.* El sistema no permite registrar un cuarto examen por materia.                                                                                                                                                                                                                                                                                       |
+| Campo               | Descripción                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **CASO DE USO**     | CU13 — Registrar Notas de Examen por el Administrador (Individual).                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| **PROPÓSITO**       | Actuar como mecanismo de excepción para que el Administrador registre o corrija la calificación individual de un examen (ej. rezagados, correcciones manuales o fallos técnicos en la BD local).                                                                                                                                                                                                                                                                                                                                            |
+| **DESCRIPCIÓN**     | El Administrador selecciona un grupo, una materia y un número de examen (1, 2 o 3). El sistema despliega la lista de postulantes y permite ingresar la nota individual. Este CU se usa principalmente para correcciones, ya que el flujo normal es la carga masiva (CU14). Tras el registro, el sistema recalcula automáticamente el promedio ponderado de la materia (CU15).                                                                                                                                                               |
+| **ACTORES**         | Tablas de BD (`examenes`, `postulantes`, `asignaciones_grupo`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| **ACTOR INICIADOR** | Administrador del Sistema.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| **PRECONDICIÓN**    | Los postulantes deben estar asignados al grupo (CU11).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| **FLUJO PRINCIPAL** | 1. El Administrador ingresa al módulo "Calificaciones". 2. Selecciona un grupo y materia. 3. El sistema despliega la lista de postulantes con columnas: Examen 1, Examen 2, Examen 3, Promedio Ponderado. 4. El Administrador selecciona el número de examen a calificar (1, 2 o 3). 5. Ingresa la nota (0-100) para el postulante excepcionado. 6. El sistema valida el rango. 7. El sistema guarda la nota y ejecuta `<<include>> CU15`: recalcula el promedio ponderado. 8. El sistema actualiza visualmente la columna correspondiente. |
+| **POST CONDICIÓN**  | La nota queda registrada con auditoría (administrador, fecha, hora). El promedio ponderado se recalcula automáticamente.                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| **EXCEPCIONES**     | *E1: Nota fuera de rango.* "La nota debe estar entre 0 y 100". *E2: Examen ya calificado.* "Este examen ya fue registrado. Use la función de edición para modificarlo". *E3: 4° examen bloqueado.* El sistema no permite registrar un cuarto examen por materia.                                                                                                                                                                                                                                                                            |
 
 ---
 
@@ -1570,17 +1720,17 @@ CU13 ..> CU15 : <<include>>
 
 **B. Ficha de Especificación del Caso de Uso**
 
-| Campo               | Descripción                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **CASO DE USO**     | CU14 — Cargar Notas Masivamente por el Administrador (CSV/Excel).                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| **PROPÓSITO**       | Optimizar el proceso de registro de notas cuando el volumen de postulantes es alto, evitando la digitación manual individual.                                                                                                                                                                                                                                                                                                                                                                       |
-| **DESCRIPCIÓN**     | El Administrador descarga una plantilla CSV con columnas predefinidas (código postulante, materia, nº examen, nota), la completa y la sube al sistema. El sistema valida cada registro y reporta errores antes de confirmar la carga masiva.                                                                                                                                                                                                                                                        |
-| **ACTORES**         | Tablas de BD (`examenes`, `postulantes`).                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| **ACTOR INICIADOR** | Administrador del Sistema.                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| **PRECONDICIÓN**    | Los postulantes deben estar asignados a grupos. El archivo debe seguir el formato de la plantilla oficial.                                                                                                                                                                                                                                                                                                                                                                                          |
-| **FLUJO PRINCIPAL** | 1. El Administrador descarga la plantilla CSV desde "Calificaciones" → "Carga Masiva". 2. Completa la plantilla con las notas. 3. Sube el archivo CSV al sistema. 4. El sistema parsea el archivo y ejecuta validaciones: códigos existentes, notas en rango 0-100, no duplicidad. 5. El sistema muestra un resumen: "N registros válidos, M errores". 6. El Administrador corrige si es necesario y confirma. 7. El sistema inserta las notas masivamente y recalcula promedios ponderados (CU15). |
-| **POST CONDICIÓN**  | Todas las notas válidas quedan registradas.                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| **EXCEPCIONES**     | *E1: Archivo vacío o formato incorrecto.* "El archivo no cumple con el formato de la plantilla". *E2: Notas duplicadas.* "Se detectaron [N] notas duplicadas que serán omitidas".                                                                                                                                                                                                                                                                                                                   |
+| Campo               | Descripción                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **CASO DE USO**     | CU14 — Cargar Notas Masivamente por el Administrador (CSV/Excel).                                                                                                                                                                                                                                                                                                                                                                                 |
+| **PROPÓSITO**       | Integrar los resultados de evaluación generados automáticamente por los laboratorios de cómputo, permitiendo subir directamente los archivos CSV exportados sin digitación manual.                                                                                                                                                                                                                                                                |
+| **DESCRIPCIÓN**     | El Administrador recibe los archivos CSV exportados por las Bases de Datos locales de los laboratorios y los sube directamente al sistema central. El sistema parsea el archivo, valida que los IDs coincidan con los postulantes y confirma la carga masiva.                                                                                                                                                                                     |
+| **ACTORES**         | Tablas de BD (`examenes`, `postulantes`).                                                                                                                                                                                                                                                                                                                                                                                                         |
+| **ACTOR INICIADOR** | Administrador del Sistema.                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| **PRECONDICIÓN**    | Los postulantes deben estar asignados a grupos. El archivo CSV debe coincidir con la estructura esperada por el sistema.                                                                                                                                                                                                                                                                                                                          |
+| **FLUJO PRINCIPAL** | 1. El Administrador ingresa a "Calificaciones" → "Carga Masiva". 2. Selecciona el archivo CSV recibido desde el laboratorio de cómputo. 3. Sube el archivo CSV al sistema. 4. El sistema parsea el archivo y ejecuta validaciones: códigos existentes, notas en rango 0-100, no duplicidad. 5. El sistema muestra un resumen: "N registros válidos, M errores". 6. El Administrador confirma. 7. El sistema inserta las notas masivamente (CU15). |
+| **POST CONDICIÓN**  | Todas las notas válidas quedan registradas y centralizadas en la BD principal.                                                                                                                                                                                                                                                                                                                                                                    |
+| **EXCEPCIONES**     | *E1: Archivo vacío o formato incorrecto.* "El archivo no cumple con el formato esperado". *E2: Notas duplicadas.* "Se detectaron [N] notas duplicadas que serán omitidas".                                                                                                                                                                                                                                                                        |
 
 ---
 
@@ -1784,14 +1934,11 @@ IA ..> NLP : <<include>>
 | **PROPÓSITO**       | Proporcionar a las autoridades de la facultad una vista consolidada e interactiva de los indicadores más relevantes del proceso de admisión del CUP.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | **DESCRIPCIÓN**     | El dashboard presenta tarjetas de indicadores (KPI cards), gráficos circulares, de barras y de líneas que se actualizan en tiempo real mediante WebSockets. Incluye: total inscritos, aprobados, reprobados, porcentajes, grupos habilitados, distribución por carrera, ranking de grupos por tasa de aprobación, evolución histórica por gestión, estado de cupos y alertas activas.                                                                                                                                                                                                                                                                                    |
 | **ACTORES**         | Tablas de BD (todas las tablas transaccionales), WebSockets.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| **ACTOR INICIADOR** | Administrador, Coordinador.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| **PRECONDICIÓN**    | El actor debe estar autenticado con rol de Administrador o Coordinador.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| **ACTOR INICIADOR** | Administrador, Coordinador, Docente (con vista restringida de sus grupos asignados).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| **PRECONDICIÓN**    | El actor debe estar autenticado con rol de Administrador, Coordinador o Docente.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | **FLUJO PRINCIPAL** | 1. El actor ingresa al módulo "Dashboard". 2. El sistema carga los indicadores calculados en tiempo real desde la BD. 3. El dashboard muestra: Total inscritos (con variación vs gestión anterior), Total evaluados, Total aprobados y % aprobación, Total reprobados y % reprobación, Grupos habilitados (con indicador de ocupación), Distribución por carrera (gráfico circular), Carrera con mayor demanda (destacada), Ranking de grupos por tasa de aprobación, Evolución histórica por gestión (gráfico de líneas), Estado de cupos por carrera (barra de progreso). 4. Los datos se actualizan en tiempo real sin necesidad de refrescar la página (WebSockets). |
 | **POST CONDICIÓN**  | Operación de solo lectura. Los indicadores reflejan el estado actual del CUP.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | **EXCEPCIONES**     | *E1: Sin datos para la gestión actual.* El dashboard muestra los indicadores en cero con el mensaje: "No hay datos registrados para la gestión actual".                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-
----
-
 ## 4.4 Prototipos de Interfaz de Usuario
 
 > **Nota:** Los prototipos de interfaz de usuario se desarrollarán de forma iterativa acompañando la implementación de cada caso de uso. Se utilizarán herramientas de generación de mockups (Figma, Draw.io o herramientas con IA) para diseñar las interfaces antes de su implementación en código. A continuación se presentan las directrices de diseño para los prototipos principales.
@@ -1808,17 +1955,108 @@ IA ..> NLP : <<include>>
 | **Formularios**       | Validación en tiempo real con mensajes inline, campos obligatorios marcados con asterisco (*), botones de acción con colores semánticos          |
 | **Accesibilidad**     | Contraste WCAG AA, navegación por teclado, labels en todos los inputs                                                                            |
 
-### Prototipos por Módulo
+### 4.4.1 Prototipos de Interfaz — CICLO 1
 
-1. **Login (CU01):** Pantalla dividida 50/50. Imagen institucional FICCT a la izquierda. Formulario limpio a la derecha con logo, título del sistema, campos de email y contraseña, botón "INGRESAR" y enlace de recuperación.
+*A continuación, se presentan las directrices en formato de "Prompt" listas para ser ingresadas en herramientas de IA de Mockups (Figma AI, Uizard, v0.dev).*
 
-2. **Registro de Postulante (CU05-CU07):** Wizard (asistente por pasos) de 3 etapas: Paso 1 — Datos Personales, Paso 2 — Checklist de Requisitos con subida de archivos, Paso 3 — Pago con Stripe (embedding del checkout).
+**CU01 - Iniciar Sesión**
+*Prompt a ingresar textual en tu IA de mockups (Google/Uizard/Figma):*
+> "Diseñar un Layout de Iniciar Sesión para uso Web/Desktop de estilo corporativo moderno, para el uso del sistema de admisión de la facultad FICCT. Debe utilizar la estética 'Glassmorphism' (paneles levemente transparentes emulando vidrio sobre un fondo degradado en tonos azul oscuro y cian). Dividir la pantalla en 50/50: La mitad izquierda muestra una fotografía elegante, desaturada y nítida de estudiantes universitarios colaborando frente a pantallas con código y diagramas técnicos en un laboratorio moderno. La mitad derecha aloja el formulario de ingreso encajado en un panel translúcido blanco con bordes suavemente redondeados y sombra sutil. Los elementos obligatorios son: Logo institucional 'CUP-FICCT' en alta resolución, Gran encabezado 'Portal de Acceso Centralizado', Campo de texto redondeado con ícono interno para 'Correo Electrónico', Campo protegido por puntos con ícono de ojo para 'Contraseña', un gran Botón de acción (accent color azul de alta intensidad #0D6EFD) que ordene 'INGRESAR AL SISTEMA', y debajo del botón un enlace discreto '¿Olvidó su contraseña?' que dirija al flujo de recuperación (CU03). No incluir botón para registrarse de manera pública; las cuentas de usuarios internos son gestionadas exclusivamente por el Administrador (CU04)."
 
-3. **Gestión de Grupos (CU10-CU11):** Vista de tarjetas (cards) mostrando cada grupo con: número, turno, cantidad de estudiantes (barra de progreso de ocupación), docentes asignados. Botón de creación masiva y asignación automática.
+**CU02 - Cerrar Sesión**
+*Prompt a ingresar textual en tu IA de mockups (Google/Uizard/Figma):*
+> "Diseñar un Componente de Menú Desplegable (Dropdown Menu) para uso Web/Desktop, de estilo moderno y minimalista, que emerge al hacer clic en el avatar del usuario ubicado en el Navbar superior derecho del sistema CUP-FICCT. El Navbar debe ser blanco con una fina línea divisoria inferior de color gris claro. El menú flotante debe utilizar un fondo blanco con bordes redondeados y una sombra suave difuminada para dar profundidad. Los elementos obligatorios dentro del dropdown son: Información resumida del usuario activo (Foto de perfil circular pequeña, Nombre completo 'Ing. Carlos Mendoza' en negrita y su Rol 'Coordinador Académico' en color gris secundario), una línea divisoria sutil, opciones interactivas con íconos vectoriales delgados para 'Mi Perfil' e 'Historial de Actividades', otra línea divisoria y la opción final 'Cerrar Sesión' resaltada visualmente con un ícono de puerta de salida y texto en color rojo semántico (#DC3545). Al pasar el cursor (hover), las opciones deben mostrar un fondo gris muy claro y bordes de selección redondeados."
 
-4. **Registro de Notas (CU13):** Grilla editable tipo spreadsheet. Columnas: Código, Nombre, Examen 1, Examen 2, Examen 3, Promedio, Estado. Celdas editables con validación de rango en tiempo real. Colores semánticos: verde (≥60), rojo (<60).
+**CU03 - Recuperar Contraseña**
+*Prompt a ingresar textual en tu IA de mockups (Google/Uizard/Figma):*
+> "Diseñar una Pantalla de Recuperación de Credenciales para uso Web/Desktop, de estilo corporativo limpio y confiable. El fondo de la pantalla debe ser un degradado suave de gris claro a blanco. En el centro, mostrar una tarjeta (Card) rectangular blanca con esquinas redondeadas y una sombra profunda. Los elementos obligatorios son: un ícono circular en la parte superior con un candado abierto en color azul institucional, un título claro y centrado '¿Problemas para ingresar?', un párrafo explicativo en tipografía legible que indique 'Ingrese su dirección de correo electrónico corporativo registrado para enviarle las instrucciones de restablecimiento', un campo de entrada de texto redondeado con un ícono de sobre para 'Correo Electrónico Corporativo', un botón primario de acción en color azul rey con texto en mayúsculas 'ENVIAR ENLACE DE RECUPERACIÓN', y en la base de la tarjeta un enlace interactivo con flecha hacia la izquierda que diga 'Volver al Inicio de Sesión' para retornar al flujo principal (CU01). Evitar cualquier elemento distractor o enlaces de soporte externos."
 
-5. **Dashboard (CU22):** Grid de KPI cards en la parte superior (4 tarjetas principales). Gráficos interactivos en la sección media (circular para distribución por carrera, barras para grupos, líneas para evolución histórica). Alertas activas en panel lateral derecho.
+**CU04 - Gestionar Perfiles de Usuario**
+*Prompt a ingresar textual en tu IA de mockups (Google/Uizard/Figma):*
+> "Diseñar una Vista de Administración Web de estilo moderno y limpio para la 'Gestión de Perfiles y Cuentas de Usuario' del sistema CUP-FICCT. El diseño debe basarse en Material Design 3, organizado en un layout de dos paneles: un Sidebar izquierdo de navegación en color azul oscuro con íconos lineales y un Panel de Contenido principal con fondo gris claro. En el panel principal, colocar un gran encabezado 'Administración de Usuarios' acompañado de un subtítulo explicativo. Los elementos obligatorios son: una barra de herramientas superior con un campo de búsqueda redondeado 'Buscar por nombre o CI', selectores dropdown para filtrar por 'Rol' (Administrador, Coordinador, Docente, Postulante) y 'Estado' (Activo, Inactivo), y un botón de acción principal en color azul intenso con el texto '+ Agregar Nuevo Usuario'. Abajo, una tabla de datos (Data Grid) estilizada que contenga columnas para Foto, Nombre Completo, Nombre de Usuario, Rol, Estado (representado con un Badge píldora: verde esmeralda para Activo, rojo suave para Inactivo) y una columna de Acciones con íconos discretos para Editar y Desactivar."
+
+**CU05 - Registrar Postulante**
+*Prompt a ingresar textual en tu IA de mockups (Google/Uizard/Figma):*
+> "Diseñar una Interfaz de Formulario de Registro en Pasos (Wizard) para uso Web/Desktop, destinada a la inscripción digital de postulantes en el CUP-FICCT. El estilo debe ser moderno y amigable, con tipografía limpia (Inter/Roboto). En la parte superior, incluir un componente de progreso lineal (Stepper) que muestre de forma secuencial y numerada: '1. Datos Personales' (estado activo), '2. Documentos e Identidad', y '3. Pago de Matrícula'. Debajo, centrar una tarjeta blanca amplia con bordes redondeados y sombra sutil. El formulario activo del Paso 1 debe contener los campos obligatorios: Nombres, Apellidos, Carnet de Identidad (CI), Fecha de Nacimiento, y dos selectores Dropdown estilizados para 'Primera Opción de Carrera' y 'Segunda Opción de Carrera' (Ingeniería de Sistemas, Informática, Redes). Cada campo debe tener etiquetas (labels) claras, placeholders descriptivos y un asterisco rojo indicando obligatoriedad. En la base derecha, un botón de acción destacado 'Siguiente Paso' con ícono de flecha derecha en color azul institucional."
+
+**CU06 - Verificar Requisitos Automáticamente**
+*Prompt a ingresar textual en tu IA de mockups (Google/Uizard/Figma):*
+> "Diseñar un Diálogo Modal Flotante de verificación automática de identidad en tiempo real, superpuesto con un fondo oscuro translúcido que desenfoque la pantalla de registro (backdrop-filter: blur). El modal central debe ser de fondo blanco con bordes redondeados y una sombra de gran elevación. Dividir el flujo visual en dos estados consecutivos: Estado A (En Proceso): muestra un loader circular (spinner) en azul cian girando dinámicamente y el texto centrado 'Validando datos biográficos con el Servicio General de Identificación Personal (SEGIP)...'. Estado B (Éxito): reemplaza el loader por una ilustración vectorial o un ícono grande de Check circular de color verde esmeralda brillante con una animación suave, seguido del encabezado en negrita 'Identidad Confirmada' y un detalle en gris indicando 'Los datos del Carnet de Identidad coinciden con los registros oficiales de SEGIP'. Incluir en la parte inferior un botón verde de confirmación 'Continuar con el Registro'."
+
+**CU07 - Procesar Pago de Matrícula (Stripe)**
+*Prompt a ingresar textual en tu IA de mockups (Google/Uizard/Figma):*
+> "Diseñar una Interfaz de Pago de Matrícula integrada para uso Web/Desktop, que emula la experiencia premium y segura de Stripe Checkout. El fondo de la pantalla debe ser un panel dividido en 60/40: la columna izquierda muestra el resumen de la matrícula (Logo 'CUP-FICCT', texto descriptivo 'Derecho a Examen de Admisión - Gestión 1-2026', y el monto total destacado en gran tamaño y negrita 'Bs. 350.00'). La columna derecha aloja el formulario de pago seguro encajado en una tarjeta blanca limpia. Los campos obligatorios son: 'Nombre en la Tarjeta', un campo especial para 'Número de Tarjeta' que muestra mini-íconos de Visa/Mastercard/Amex a la derecha según el dígito ingresado, campos agrupados horizontalmente para 'Fecha de Expiración (MM/AA)' y 'CVC (3 dígitos)', y un campo para el 'Código Postal'. En la base, un gran botón de acción azul con el texto 'PAGAR Bs. 350.00' acompañado de un ícono de candado de seguridad, y abajo un texto discreto: 'Pagos procesados de forma segura mediante Stripe'."
+
+**CU08 - Detectar Postulante Recurrente**
+*Prompt a ingresar textual en tu IA de mockups (Google/Uizard/Figma):*
+> "Diseñar un Componente de Notificación Flotante (Toast Notification) moderno y de alto impacto visual, ubicado en la esquina superior derecha de la pantalla de registro de postulantes. El toast debe tener una estructura rectangular con bordes redondeados, fondo blanco y un borde izquierdo grueso de color rojo semántico (#DC3545) que llame la atención. En la parte izquierda, un círculo rojo suave con un ícono de exclamación o advertencia de color rojo intenso. A la derecha del ícono, un título en negrita 'Postulante Ya Registrado' y un mensaje descriptivo en gris oscuro que explique: 'El número de Carnet de Identidad (CI) ingresado ya cuenta con un registro activo para la gestión actual (1-2026)'. En el extremo derecho superior, colocar un ícono pequeño de 'X' gris para cerrar manualmente la notificación. El toast debe simular una sombra sutil para flotar sobre el formulario."
+
+**CU09 - Buscar y Consultar Postulantes**
+*Prompt a ingresar textual en tu IA de mockups (Google/Uizard/Figma):*
+> "Diseñar una Vista Web de Búsqueda Avanzada y Consulta de Postulantes en el CUP-FICCT. El diseño de la pantalla debe ser espacioso y moderno, con un fondo gris claro y una tipografía corporativa limpia. En la parte superior, centrar una barra de búsqueda unificada muy prominente con un ícono de lupa a la izquierda, bordes redondeados y un placeholder que diga 'Buscar postulante por Nombre, CI, Carrera o Nro. de Registro...'. Debajo de la barra de búsqueda, mostrar una sección de filtros rápidos expandible mediante Badges seleccionables (ej. 'Todos', 'Inscripción Confirmada', 'Pendiente de Pago'). Abajo, una grilla de resultados organizada en tarjetas de perfil limpias (Grid Layout). Cada tarjeta debe mostrar: Foto de perfil del postulante en un recuadro redondeado, su Nombre Completo destacado en negrita, su CI, su Carrera de preferencia, un Badge de estado de su pago, y un botón secundario discreto con ícono de ojo que diga 'Ver Expediente Completo' para abrir sus detalles detallados."
+
+**CU10 - Calcular y Crear Grupos Automáticamente**
+*Prompt a ingresar textual en tu IA de mockups (Google/Uizard/Figma):*
+> "Diseñar un Panel de Control de Operaciones Académicas para el Coordinador del CUP-FICCT, enfocado en el cálculo y distribución automática de grupos de admisión. La interfaz debe presentar una tarjeta de control (Control Card) de gran tamaño con fondo blanco, bordes redondeados y sombra sutil. En el centro de la tarjeta, mostrar una sección de estadísticas clave: un número gigante y destacado en azul rey '1,420' con la etiqueta 'Postulantes Habilitados para Asignación'. Debajo de esta cifra, incluir controles interactivos de configuración: un control numérico con botones (+) y (-) para definir la 'Capacidad Máxima por Grupo' (preestablecido en 70 estudiantes) y un selector para la cantidad estimada de aulas. En la parte inferior, colocar un botón de acción primario azul rey y ancho completo que ordene 'EJECUTAR ALGORITMO DE DISTRIBUCIÓN'. Al presionar el botón, simular la aparición de una barra de progreso animada en color cian con un porcentaje de avance del 78% y un estado textual que indique: 'Distribuyendo estudiantes equitativamente y asignando códigos de grupo...'"
+
+**CU11 - Asignar Postulantes a Grupos**
+*Prompt a ingresar textual en tu IA de mockups (Google/Uizard/Figma):*
+> "Diseñar una Interfaz Web de Pantalla Dividida (Master-Detail) de estilo profesional para la gestión y visualización de postulantes asignados a grupos del CUP-FICCT. A la izquierda (ancho 30%), mostrar una barra lateral interna con un buscador de grupos y un listado vertical de tarjetas compactas que representan los grupos generados (ej. 'Grupo G1 - Aula 102 - 70/70 Postulantes', 'Grupo G2 - Aula 103 - 68/70 Postulantes'). Cada tarjeta del grupo debe tener un indicador visual tipo barra de progreso que muestre el nivel de llenado del grupo. Al seleccionar un grupo de la izquierda, el panel derecho (ancho 70%) debe cargarse de forma dinámica mostrando un encabezado con el nombre del grupo en negrita, capacidad y aula, junto a un botón azul de 'Exportar PDF/CSV' en la esquina superior derecha. Debajo, mostrar una tabla detallada con los 70 postulantes asignados que incluya columnas para Nro, CI, Nombre y Apellidos, Carrera y un botón de acción para transferir o reasignar manualmente al estudiante a otro grupo."
+
+**CU12 - Asignar Docente a Grupo**
+*Prompt a ingresar textual en tu IA de mockups (Google/Uizard/Figma):*
+> "Diseñar una Interfaz Interactiva de Asignación Docente tipo Drag and Drop (Arrastrar y Soltar) para uso Web/Desktop en el sistema CUP-FICCT. La pantalla está dividida en dos grandes paneles sobre un fondo gris neutro muy claro. A la izquierda, un panel flotante blanco titulado 'Docentes Disponibles' que contiene una lista vertical de tarjetas de profesores arrastrables. Cada tarjeta de docente incluye su avatar circular, nombre completo ('Dr. Andrés Torrez'), especialidad ('Matemáticas / Álgebra'), y un badge que indica su carga horaria asignada (ej. 'Asignaciones: 2/4' en verde). A la derecha, un panel cuadriculado (Grid Layout) que representa los 'Grupos Activos y Sus Materias' (Grupo G1, Grupo G2, Grupo G3). Dentro de cada grupo, mostrar slots o casilleros vacíos de bordes punteados de color gris oscuro, etiquetados según la materia ('Matemáticas', 'Física', 'Cómputo', 'Inglés'). Al arrastrar una tarjeta de docente y posicionarla sobre un slot vacío, el casillero debe iluminarse con un borde azul cian y transformarse en una tarjeta docente fija con un botón de 'X' roja para desasignar."
+
+**CU23 - Realizar Simulacro de Examen**
+*Prompt a ingresar textual en tu IA de mockups (Google/Uizard/Figma):*
+> "Diseñar una Interfaz Web de Examen y Simulacro en Línea para el postulante del CUP-FICCT, optimizada para pantalla de computadora y enfocada en la usabilidad, eliminando distracciones. El diseño debe ser en tonos grises claros y blancos con acentos azules. En la parte superior, una barra de navegación fija que aloje el logo del simulacro, el nombre de la materia activa ('Física Básica'), y en el extremo derecho un temporizador digital con cuenta regresiva destacado en rojo suave ('Tiempo Restante: 45:18') acompañado de un ícono de reloj de arena. En el panel central, centrar una tarjeta blanca con bordes redondeados y sombra suave. La tarjeta muestra el bloque de pregunta activa: un encabezado grande 'Pregunta 12 de 40' en gris secundario, seguido del enunciado de la pregunta con tipografía grande e impecable, y abajo un listado vertical de 4 opciones de respuesta de opción múltiple representadas por grandes botones interactivos con bordes redondeados (el botón seleccionado debe tener un fondo azul institucional claro y un borde azul intenso). En la base del formulario, botones de navegación inferiores espaciados: a la izquierda 'Anterior Pregunta' (secundario en gris) y a la derecha 'Siguiente Pregunta' (primario en azul oscuro), además de un botón flotante 'Finalizar Simulacro'."
+
+---
+
+### 4.4.2 Prototipos de Interfaz — CICLO 2
+
+*A continuación, se presentan las directrices en formato de "Prompt" para los módulos de la segunda iteración.*
+
+**CU13 - Registrar Notas de Examen (Individual)**
+*Prompt a ingresar textual en tu IA de mockups (Google/Uizard/Figma):*
+> "Diseñar un Formulario de Ajuste y Registro de Nota Individual para uso Web/Desktop, estructurado como una ventana modal pequeña e interactiva que emerge sobre la pantalla principal de la planilla académica del CUP-FICCT. El fondo detrás del modal debe estar oscurecido e inactivo. El modal debe tener una cabecera con el título 'Ajuste Manual de Calificación' en negrita y un ícono de lápiz de edición a la izquierda. Los elementos obligatorios son: una sección de datos informativos de solo lectura con fondo gris muy claro que muestre el Nombre Completo del Postulante, su Carnet de Identidad y la carrera seleccionada; un menú de selección Dropdown para elegir la 'Materia a Modificar' (Matemáticas, Física, Computación, Inglés); un selector bloqueado para el 'Examen' (Primer Parcial, Segundo Parcial, Examen Final); un campo de entrada numérico muy destacado en el centro para la 'Nota Final (0-100)' con controles de incremento y validación de rango; y un área de texto redondeada obligatoria para ingresar la 'Justificación o Motivo del Ajuste' (ej: certificado médico, revisión de examen). En el pie del modal, dos botones alineados a la derecha: 'Cancelar' en gris suave y 'Guardar Cambios' en color azul rey con un ícono de disco de guardar."
+
+**CU14 - Cargar Notas Masivas (CSV)**
+*Prompt a ingresar textual en tu IA de mockups (Google/Uizard/Figma):*
+> "Diseñar una Interfaz Web Corporativa de 'Carga Masiva de Calificaciones desde Archivo CSV' para el Coordinador Académico del CUP-FICCT. El diseño de la pantalla debe ser limpio, amplio y enfocado en el flujo de trabajo de carga de archivos. El elemento central y más prominente debe ser una gran zona de arrastre de archivos (Drag & Drop Zone) diseñada con bordes punteados gruesos en color azul institucional, un fondo azul muy tenue y un gran ícono vectorial de nube de carga en el centro, acompañado del texto principal 'Arrastre y suelte su archivo CSV de notas aquí' y un subtítulo secundario 'o haga clic para explorar sus archivos locales (Formatos permitidos: .csv, peso máx: 10MB)'. Debajo de la zona de arrastre, colocar un botón para 'Descargar Plantilla CSV Oficial'. Una vez seleccionado un archivo, simular la aparición de un panel de progreso inferior que muestre la barra de carga llenándose en color verde esmeralda, indicando el número de filas leídas y validando si hay errores de formato con un reporte en vivo: '1,420 notas leídas - 0 errores encontrados'."
+
+**CU15 - Calcular Promedio Ponderado**
+*Prompt a ingresar textual en tu IA de mockups (Google/Uizard/Figma):*
+> "Diseñar una Interfaz de Planilla Académica Digital para uso Web/Desktop que muestre de forma interactiva y detallada las notas y el cálculo automático del Promedio Ponderado por materia de los postulantes del CUP-FICCT. El diseño debe asemejarse a una hoja de cálculo profesional integrada en la plataforma web, con un encabezado fijo y barras de desplazamiento suaves. La tabla debe incluir columnas para: Foto de Perfil, CI, Nombre y Apellidos, Nota Matemáticas (30%), Nota Física (30%), Nota Cómputo (20%), Nota Inglés (20%). La columna final 'Promedio Final Ponderado' debe estar visualmente destacada utilizando un fondo de celda azul muy claro y texto en negrita de color azul marino. Al simular que el cursor pasa sobre las notas individuales de un postulante, estas deben resaltar en gris claro, y debe mostrarse un tooltip o globo explicativo que detalle la fórmula matemática de ponderación utilizada en tiempo real. En la esquina superior derecha, añadir un interruptor de palanca (Toggle Switch) para 'Mostrar Ponderaciones en Cabecera'."
+
+**CU16 - Determinar Estado (Aprobado/Reprobado)**
+*Prompt a ingresar textual en tu IA de mockups (Google/Uizard/Figma):*
+> "Diseñar un Componente Visual de Indicador de Estado Académico para la Planilla de Consolidación de Postulantes en el sistema CUP-FICCT, optimizado para visualización web. En la tabla de notas consolidada, la columna 'Estado de Admisión' debe mostrar etiquetas estilizadas tipo Badge o Píldora de alta fidelidad. Si la nota ponderada final es superior o igual a 60, el badge debe tener un fondo de color verde esmeralda suave (#E2F6ED) con texto en color verde oscuro (#0F5132) y un pequeño ícono de Check redondo que indique 'APROBADO'. Si la nota es inferior a 60, el badge debe presentarse con un fondo rojo pastel (#FDE8E8) y texto en color rojo oscuro (#8A1F1F) junto a un ícono de advertencia circular indicando 'REPROBADO'. El diseño general debe transmitir claridad y orden inmediato al primer golpe de vista, permitiendo ordenar y filtrar la grilla completa haciendo clic directamente en los badges de la cabecera."
+
+**CU17 - Asignación de Carreras por Cupo**
+*Prompt a ingresar textual en tu IA de mockups (Google/Uizard/Figma):*
+> "Diseñar un Panel Ejecutivo Moderno para la asignación definitiva de cupos en las carreras de la facultad FICCT (Ingeniería de Sistemas, Informática, Redes y Telecomunicaciones). La pantalla tiene fondo gris oscuro elegante y un diseño modular. En la cabecera, colocar un gran botón de acción principal de color azul rey titulado 'EJECUTAR PROCESO DE ASIGNACIÓN FINAL'. Al simular la ejecución, la pantalla se divide en tres columnas, una para cada carrera. Cada columna muestra una tarjeta de progreso compuesta por: un gráfico circular (Donut Chart) estilizado que indica el porcentaje actual de ocupación de cupos (ej. '98% Ocupado'), indicadores numéricos en negrita de 'Cupos Llenados vs. Cupos Disponibles', y una lista ordenada de los postulantes admitidos de mayor a menor nota asignados a esa carrera. Las tarjetas deben tener bordes redondeados de alta precisión y un degradado de fondo suave. En la parte inferior, colocar un botón para 'Publicar Listas de Admisión Oficiales'."
+
+**CU18 - Configurar Cupos por Carrera**
+*Prompt a ingresar textual en tu IA de mockups (Google/Uizard/Figma):*
+> "Diseñar una Vista de Configuración Académica para uso Web/Desktop enfocada en la definición y ajuste de cupos disponibles por carrera de la facultad FICCT. El diseño de la pantalla debe ser limpio y moderno. Presentar tres tarjetas horizontales (Cards) de gran tamaño alineadas verticalmente, representando a cada carrera: 'Ingeniería de Sistemas', 'Ingeniería Informática' e 'Ingeniería en Redes y Telecomunicaciones'. Cada tarjeta debe incluir: el escudo o ícono vectorial representativo de la especialidad académica, el total de postulantes inscritos en la carrera activa como primera opción, y un control de entrada numérico central muy destacado que permita establecer el 'Límite de Cupos Permitidos para la Gestión Actual'. Este input numérico debe contar con grandes botones laterales modernos de (+ y -) de estilo minimalista para su ajuste rápido. A la derecha de cada tarjeta, colocar una barra de progreso que muestre dinámicamente la relación porcentual entre postulantes interesados e ingresantes proyectados. En el pie de la vista, colocar botones de acción 'Guardar Configuración' (azul rey) y 'Restaurar Valores por Defecto' (gris sutil)."
+
+**CU19 - Generar Reporte Estructurado**
+*Prompt a ingresar textual en tu IA de mockups (Google/Uizard/Figma):*
+> "Diseñar una Vista Web de Generación Rápida de Reportes Estructurados y Oficiales para el sistema de admisión CUP-FICCT. El diseño debe ser sobrio y profesional. La pantalla se divide en un panel superior de selección de plantillas que contiene tarjetas con íconos vectoriales muy limpios que representan los reportes predefinidos más utilizados: 'Nómina Oficial de Aprobados', 'Estadísticas de Recaudación de Matrículas', 'Carga y Distribución de Aulas/Grupos', y 'Lista de Docentes Asignados'. Al hacer clic sobre cualquiera de las tarjetas de reportes, el panel inferior debe cargar de manera instantánea una previsualización interactiva de alta fidelidad del documento oficial con formato de solo lectura. El reporte debe mostrar el membrete de la Universidad Autónoma Gabriel René Moreno (UAGRM) y de la facultad FICCT, una grilla de datos numerada perfectamente alineada con bordes finos, y en la esquina superior derecha del panel de previsualización, botones flotantes redondos para 'Exportar a formato PDF', 'Descargar Excel' y un botón directo para 'Imprimir Reporte'."
+
+**CU20 - Generar Reporte Dinámico**
+*Prompt a ingresar textual en tu IA de mockups (Google/Uizard/Figma):*
+> "Diseñar una Interfaz de Usuario para el Constructor y Generador de Reportes Dinámicos (Business Intelligence Ad-hoc) para uso Web/Desktop en el sistema CUP-FICCT. El diseño debe ser modular y moderno, enfocado en analistas académicos. Dividir la pantalla en 30/70: La sección de la izquierda es una barra lateral blanca de herramientas que contiene un listado de 'Campos Disponibles' organizados por categorías (Datos Personales, Datos de Exámenes, Datos de Pago) representados mediante Checkboxes redondeados que el usuario puede marcar para añadir columnas. Debajo, mostrar acordeones expandibles para aplicar 'Filtros Personalizados' (ej. Nota > 70, Carrera = Sistemas) mediante inputs tipo chips. El panel derecho (70%) aloja la 'Previsualización del Reporte en Tiempo Real' que renderiza una tabla de datos (Data Grid) que se reestructura dinámicamente conforme se marcan o desmarcan los campos de la izquierda. En la cabecera del panel derecho, incluir botones flotantes con acentos en azul oscuro para 'Guardar Consulta Dinámica' y 'Descargar Reporte Personalizado'."
+
+**CU21 - Reporte por Voz (IA)**
+*Prompt a ingresar textual en tu IA de mockups (Google/Uizard/Figma):*
+> "Diseñar una Interfaz de Usuario Web interactiva y futurista para la generación de reportes mediante comandos de voz con Inteligencia Artificial (NLP) en el sistema CUP-FICCT. El diseño debe utilizar una estética 'Glassmorphism' sobre un fondo sutilmente animado con ondas fluidas en tonos cian y morado oscuro. En el centro de la pantalla, presentar un panel blanco translúcido con bordes redondeados y sombra suave. El elemento visual central es un gran botón circular flotante con el ícono de un micrófono de alta fidelidad, rodeado de ondas de frecuencia sonora animadas de color azul brillante que irradian dinámicamente hacia afuera para simular la captura de audio en vivo. Encima del micrófono, mostrar una caja de texto que simula transcribir la voz en tiempo real con una tipografía cursiva elegante: 'Mostrando postulantes aprobados del Grupo G2 que ingresaron a Ingeniería de Sistemas...'. Debajo del botón del micrófono, una zona de visualización donde emerge sutilmente mediante un efecto de desvanecimiento (Fade-in) la tabla de datos exacta con los resultados solicitados de la consulta."
+
+**CU22 - Dashboard Estadístico en Tiempo Real**
+*Prompt a ingresar textual en tu IA de mockups (Google/Uizard/Figma):*
+> "Diseñar un Dashboard Analítico y Estadístico de Alto Rendimiento para uso Web/Desktop en Dark Mode (Fondo gris oscuro casi negro, tipografía e íconos en blanco y cian vibrante) para el control del proceso del CUP-FICCT. La pantalla debe tener un diseño modular de grilla de 3 filas. Fila superior: 4 tarjetas de indicadores clave (KPI Cards) con bordes redondeados de estética neon, que muestran: 'Inscritos Totales' (1,420), 'Exámenes Evaluados' (1,200), 'Porcentaje de Aprobación' (68%), y 'Recaudación Total' (Bs. 497,000) con mini-gráficos de tendencias integrados en la base de cada tarjeta. Fila central: contiene un gráfico circular estilizado (Donut Chart) a la izquierda que representa la 'Distribución de Postulantes por Carrera', y a la derecha un gráfico de barras agrupadas que muestra el 'Promedio de Rendimiento por Materia' (Matemáticas, Física, Cómputo, Inglés) comparando la gestión actual con la anterior. Fila inferior: una tabla compacta en tiempo real con los últimos 5 exámenes procesados y un log de actividades del sistema que se actualiza dinámicamente usando WebSockets sin parpadeo de pantalla."
+
 
 ---
 
@@ -1839,6 +2077,8 @@ actor "Coordinador" as Coord
 actor "Postulante" as Post
 actor "Docente" as Doc
 actor "Stripe\n(Pasarela)" as Stripe
+actor "API SEGIP\n(Servicio Externo)" as SEGIP
+actor "API SEDUCA\n(Servicio Externo)" as SEDUCA
 
 rectangle "SISTEMA CUP-FICCT — CICLO #1" {
 
@@ -1868,6 +2108,7 @@ rectangle "SISTEMA CUP-FICCT — CICLO #1" {
 ' === Relaciones de Actores ===
 Admin --> CU01
 Admin --> CU02
+Admin --> CU03
 Admin --> CU04
 Admin --> CU09
 Admin --> CU10
@@ -1876,6 +2117,7 @@ Admin --> CU12
 
 Coord --> CU01
 Coord --> CU02
+Coord --> CU03
 Coord --> CU09
 Coord --> CU12
 
@@ -1889,14 +2131,19 @@ Post --> CU23
 
 Doc --> CU01
 Doc --> CU02
+Doc --> CU03
+Doc --> CU09
 
 CU07 --> Stripe
+CU06 --> SEGIP
+CU06 --> SEDUCA
 
 ' === Relaciones entre CU ===
+' Nota (PUDS): <<include>> se usa para comportamiento extraído.
+' El CU05 incluye CU06 y CU08 durante su flujo de ejecución.
 CU05 ..> CU08 : <<include>>
 CU05 ..> CU06 : <<include>>
 CU07 ..> CU06 : <<include>>
-CU11 ..> CU10 : <<include>>
 
 @enduml
 ```
@@ -1916,13 +2163,12 @@ skinparam backgroundColor #FEFEFE
 actor "Administrador" as Admin
 actor "Coordinador" as Coord
 actor "Docente" as Doc
-actor "Postulante" as Post
 actor "Servicio IA\n(NLP)" as IA
 
 rectangle "SISTEMA CUP-FICCT — CICLO #2" {
 
   package "Módulo de Gestión Académica y Exámenes" {
-    usecase "CU13: Registrar Notas\n(Individual)" as CU13
+    usecase "CU13: Registrar Notas\n(Administrador)" as CU13
     usecase "CU14: Cargar Notas\n(CSV Masivo)" as CU14
     usecase "CU15: Calcular Promedio\nPonderado" as CU15
     usecase "CU16: Determinar Estado\n(Aprobado/Reprobado)" as CU16
@@ -1956,13 +2202,15 @@ Coord --> CU20
 Coord --> CU21
 Coord --> CU22
 
+Doc --> CU22
+
 CU21 --> IA
 
 ' === Relaciones entre CU ===
+' Nota (PUDS): Al registrar notas, el sistema automáticamente recalcula el promedio y determina el estado.
 CU13 ..> CU15 : <<include>>
 CU14 ..> CU15 : <<include>>
 CU15 ..> CU16 : <<include>>
-CU16 ..> CU17 : <<extend>>
 
 @enduml
 ```
@@ -1979,196 +2227,1553 @@ El Flujo de Trabajo de Análisis en el Proceso Unificado de Desarrollo de Softwa
 
 En la fase de análisis se define una arquitectura conceptual de tres capas de abstracción para garantizar la separación de responsabilidades, la mantenibilidad del software y la escalabilidad del sistema:
 
-1. **Capa de Interfaz (Boundary):** Encapsula la interacción del sistema con su entorno (actores humanos y sistemas externos). No contiene lógica de negocio; es puramente representativa y receptora de eventos de usuario.
-2. **Capa de Control:** Coordina y encapsula las reglas de negocio del sistema, la lógica computacional de los algoritmos de asignación, los cálculos promedio de calificaciones, la verificación de cupos y la orquestación de transacciones.
-3. **Capa de Entidad:** Representa la información persistente y los conceptos clave del dominio del negocio. Almacena el estado de las variables y sobrevive a la ejecución de los casos de uso.
+
+
+### 5.1.2 Identificación de Paquetes de Análisis
+
+De acuerdo con el **Proceso Unificado de Desarrollo de Software (PUDS)** y bajo los principios de modularidad, alta cohesión y bajo acoplamiento, las clases de análisis identificadas se agrupan en paquetes lógicos organizativos. A continuación, se detalla la identificación de estos paquetes de análisis, estructurados por ciclo iterativo de desarrollo para reflejar la evolución incremental del sistema:
+
+#### A. Identificar Paquetes — CICLO 1 (Arquitectura Base e Inscripción)
+
+**Descripción del diagrama:** Se identifican 3 paquetes de análisis fundacionales para el primer ciclo de desarrollo, encargados de la gobernanza de accesos, el control de la preinscripción digital y la logística de asignación física de los estudiantes.
 
 ```plantuml
-@startuml CapasAnalisis
-skinparam backgroundColor #FEFEFE
-skinparam packageStyle rectangle
-skinparam roundCorner 8
+@startuml Paquetes_Ciclo1_Arquitectura
+skinparam packageStyle folder
+skinparam backgroundColor transparent
 
-package "Capa de Interfaz (Boundary)" {
-  class "InterfazAutenticacion" as B_Auth <<boundary>>
-  class "InterfazInscripcion" as B_Insc <<boundary>>
-  class "InterfazAcademica" as B_Acad <<boundary>>
-  class "InterfazGrupos" as B_Grup <<boundary>>
-  class "InterfazReportes" as B_Rep <<boundary>>
-}
+package "Paquete_Autenticacion" as P_Auth
+package "Paquete_Registro_Postulantes" as P_Post
+package "Paquete_Planificacion_Academica" as P_Plan
 
-package "Capa de Control" {
-  class "ControladorAutenticacion" as C_Auth <<control>>
-  class "ControladorInscripcion" as C_Insc <<control>>
-  class "ControladorAcademico" as C_Acad <<control>>
-  class "ControladorGrupos" as C_Grup <<control>>
-  class "ControladorReportes" as C_Rep <<control>>
-}
-
-package "Capa de Entidad" {
-  class "Usuario" as E_User <<entity>>
-  class "Postulante" as E_Post <<entity>>
-  class "Examen" as E_Exam <<entity>>
-  class "Grupo" as E_Grup <<entity>>
-  class "Docente" as E_Doc <<entity>>
-  class "Carrera" as E_Carr <<entity>>
-}
-
-' Relaciones entre Capas
-B_Auth ..> C_Auth : solicita
-B_Insc ..> C_Insc : solicita
-B_Acad ..> C_Acad : solicita
-B_Grup ..> C_Grup : solicita
-B_Rep ..> C_Rep : solicita
-
-C_Auth ..> E_User : manipula
-C_Insc ..> E_Post : manipula
-C_Acad ..> E_Exam : calcula y persiste
-C_Grup ..> E_Grup : organiza
-C_Grup ..> E_Doc : asigna
-C_Rep ..> E_Post : consulta estadisticas
-C_Rep ..> E_Carr : lee cupos
 @enduml
 ```
 
----
+*   **`Paquete_Autenticacion` (P_Auth):** Encapsula todas las clases conceptuales (*Boundary*, *Control*, *Entity*) que regulan la seguridad transaccional, el control de acceso basado en roles (RBAC) y la auditoría interna. Centraliza el control de sesiones para los roles de Administrador, Coordinador, Docente y Postulante, bloqueando o autorizando el acceso a las interfaces correspondientes según sus privilegios organizacionales y registrando los eventos en la bitácora de accesos inmutable.
+*   **`Paquete_Registro_Postulantes` (P_Post):** Agrupa el flujo completo de preinscripción de postulantes. Su alcance abarca la captura de metadatos de identidad, la verificación digital de requisitos escolares y personales integrando bases de datos gubernamentales (SEGIP/SEDUCA), la detección en caliente de registros duplicados por CI y la orquestación segura del pago de matrícula a través de la pasarela Stripe. Su cohesión reside en la manipulación centralizada de la entidad `Postulante`.
+*   **`Paquete_Planificacion_Academica` (P_Plan):** Responsable de administrar la logística de aulas, horarios e instructores de la facultad FICCT. Contiene la lógica del algoritmo de cálculo y creación dinámica de grupos (con límite estricto de 70 alumnos), la distribución equitativa de postulantes en aulas virtuales y la validación paramétrica que restringe que un docente sea asignado a más de 4 grupos activos por gestión académica.
 
-## 5.2 Análisis de Casos de Uso (Diagramas de Comunicación)
+#### B. Identificar Paquetes — CICLO 2 (Gestión Académica y Reportes de Inteligencia)
 
-Los diagramas de comunicación de análisis ilustran cómo colaboran dinámicamente los objetos Boundary, Control y Entity para realizar la lógica específica de un caso de uso de manera pura y abstracta.
-
-### Realización de Análisis para CU07: Procesar Pago de Matrícula (Stripe)
-
-Muestra la colaboración cuando el postulante efectúa el pago una vez que su checklist digital ha sido validado.
+**Descripción del diagrama:** Para la segunda iteración, se incorporan 3 nuevos paquetes de análisis enfocados en la lógica de evaluación, la admisión final de carreras y la analítica estadística. Bajo la metodología PUDS, los paquetes del Ciclo 1 se heredan de manera estable y actúan como cimientos lógicos del sistema central, garantizando una arquitectura extensible y libre de dependencias circulares.
 
 ```plantuml
-@startuml Com_CU07
-skinparam backgroundColor #FEFEFE
-skinparam roundCorner 8
+@startuml Paquetes_Ciclo2_Arquitectura
+skinparam packageStyle folder
+skinparam backgroundColor transparent
 
-actor "Postulante" as Act
-boundary "InterfazInscripcion" as B_Insc
-control "ControladorInscripcion" as C_Insc
-boundary "PasarelaStripe" as B_Stripe <<boundary>>
-entity "Pago" as E_Pago
-entity "Postulante" as E_Post
+package "Paquete_Autenticacion" as P_Auth <<existente>>
+package "Paquete_Registro_Postulantes" as P_Post <<existente>>
+package "Paquete_Planificacion_Academica" as P_Plan <<existente>>
+package "Paquete_Evaluacion" as P_Eval <<nuevo>>
+package "Paquete_Admision_Carreras" as P_Admi <<nuevo>>
+package "Paquete_Reportes_IA" as P_Rep <<nuevo>>
 
-Act -> B_Insc : 1: Solicitar pago de matrícula()
-B_Insc -> C_Insc : 2: IniciarProcesoPago(postulanteId)
-C_Insc -> B_Stripe : 3: CrearSesionPago(monto)
-B_Stripe --> C_Insc : 4: UrlRedireccionSesion
-C_Insc --> B_Insc : 5: RedirigirAPasarela()
-B_Insc --> Act : 6: MostrarFormularioPagoStripe()
-Act -> B_Stripe : 7: ConfirmarDatosTarjeta()
-B_Stripe -> C_Insc : 8: NotificarPagoExitoso(StripeWebhook)
-C_Insc -> E_Pago : 9: CrearRegistroPago(monto, transaccionId)
-C_Insc -> E_Post : 10: ActualizarEstado("Inscrito")
 @enduml
 ```
 
-### Realización de Análisis para CU11: Asignar Postulantes a Grupos
-
-Muestra cómo el Administrador dispara el proceso de organización automática de los alumnos según su turno de preferencia.
-
-```plantuml
-@startuml Com_CU11
-skinparam backgroundColor #FEFEFE
-skinparam roundCorner 8
-
-actor "Administrador" as Act
-boundary "InterfazGrupos" as B_Grup
-control "ControladorGrupos" as C_Grup
-entity "Postulante" as E_Post
-entity "Grupo" as E_Grupo
-entity "AsignacionGrupo" as E_Asig
-
-Act -> B_Grup : 1: EjecutarAsignacionGrupos()
-B_Grup -> C_Grup : 2: ProcesarAsignacionMasiva()
-C_Grup -> E_Post : 3: ObtenerPostulantesInscritosSinGrupo()
-E_Post --> C_Grup : 4: ColeccionPostulantes
-C_Grup -> C_Grup : 5: CalcularGruposNecesarios(CEIL(N / 70))
-C_Grup -> E_Grupo : 6: GenerarNuevosGrupos(Cantidad)
-C_Grup -> E_Asig : 7: VincularPostulanteAGrupo(postulanteId, grupoId)
-C_Grup --> B_Grup : 8: ConfirmarAsignacionExito()
-B_Grup --> Act : 9: MostrarGruposConPostulantes()
-@enduml
-```
+*   **`Paquete_Evaluacion` (P_Eval):** Encapsula la gestión y consistencia de calificaciones académicas. Coordina la carga masiva y parseo de archivos CSV exportados automáticamente desde los computadores de los laboratorios locales de examen, el ajuste individual de notas ante excepciones justificadas por el Administrador, el cálculo determinista del promedio ponderado por materia (fórmula 30% Parcial 1 + 30% Parcial 2 + 40% Examen Final) y la validación del estado final del postulante (aprobado si el promedio en cada una de las 4 materias es >= 60). Su separación del paquete de inscripción obedece al principio de **segregación de responsabilidades**.
+*   **`Paquete_Admision_Carreras` (P_Admi):** Gobierna el módulo resolutivo del preuniversitario del CUP. Sus clases gestionan el ajuste paramétrico de los cupos ofertados por carrera para la gestión vigente y ejecutan el algoritmo secuencial masivo de asignación de vacantes. El algoritmo ordena de forma descendente a los postulantes aprobados y les otorga su plaza respetando estrictamente el orden de mérito y las preferencias indicadas (1ª y 2ª opción) hasta agotar la disponibilidad de cupos.
+*   **`Paquete_Reportes_IA` (P_Rep):** Concentra la capa analítica de Inteligencia de Negocios (BI) para las autoridades de la facultad. Agrupa las clases que extraen métricas del Kardex central, actualizan el dashboard administrativo en tiempo real mediante WebSockets y procesan la Web Speech API del navegador en el frontend para traducir comandos de voz del usuario en reportes semánticos mediante modelos NLP en la nube.
 
 ---
 
-## 5.3 Análisis de Clases (Boundary, Control, Entity)
+### 5.1.3 Relación entre Paquetes y Casos de Uso
 
-A continuación se identifican y describen las clases de análisis organizadas por módulos funcionales del sistema, especificando sus responsabilidades intrínsecas:
+Esta sección establece la trazabilidad inequívoca entre los paquetes arquitectónicos y los 23 Casos de Uso (CU) definidos para el sistema, divididos rigurosamente según su ciclo de implementación. La inclusión lógica se modela mediante diagramas de paquetes UML que encapsulan los casos de uso específicos y relaciones estereotipadas `<<trace>>` que documentan cómo colaboran las clases de análisis internas para realizar el comportamiento solicitado en la fase de análisis.
 
-### 1. Módulo de Autenticación y Autorización
-*   **`InterfazLogin` (Boundary):** Formulario para capturar el correo electrónico y la contraseña del usuario. Maneja errores de validación iniciales y redirecciones.
-*   **`ControladorAcceso` (Control):** Autentica las credenciales, genera el token de sesión (JWT) y gestiona la bitácora de accesos.
-*   **`Usuario` (Entity):** Almacena datos del usuario, contraseña hasheada y asignación de rol jerárquico.
-*   **`BitacoraAcceso` (Entity):** Registra cada login y logout exitoso o fallido con IP y fecha.
+#### A. Relacionar Paquetes y Casos de Uso — CICLO 1
 
-### 2. Módulo de Registro de Postulantes
-*   **`InterfazPreinscripcion` (Boundary):** Formulario dinámico para la entrada de datos del postulante, subida del título de bachiller y checklist.
-*   **`ControladorPreinscripcion` (Control):** Valida la unicidad del CI, ejecuta la validación contra las bases de datos externas de SEGIP/SEDUCA e inicia el procesamiento de Stripe.
-*   **`Postulante` (Entity):** Contiene la información general, turno, carreras de opción y estado académico actual.
-*   **`RequisitoDigital` (Entity):** Almacena el cumplimiento individual del checklist documental digitalizado.
-
-### 3. Módulo Académico y Evaluación
-*   **`InterfazNotas` (Boundary):** Vista interactiva para registrar notas y cargar archivos CSV masivos por parte del Administrador.
-*   **`ControladorEvaluacion` (Control):** Valida los límites de la nota (0-100), aplica la ponderación estricta del 30%-30%-40% y ejecuta el cálculo automático del estado final académico.
-*   **`Examen` (Entity):** Representa cada una de las calificaciones de las 4 materias.
-*   **`NotaFinal` (Entity):** Almacena el consolidado final ponderado y la determinación determinista de APROBADO o REPROBADO.
-
-### 4. Módulo de Asignación de Grupos y Docentes
-*   **`InterfazGrupos` (Boundary):** Panel del administrador para ver distribución de estudiantes, aulas, horarios y carga docente.
-*   **`ControladorPlanificacion` (Control):** Implementa el algoritmo de balanceo y cálculo automático de grupos con cota de 70 alumnos y validación de tope horario.
-*   **`Grupo` (Entity):** Representa la sección física de clase con su aula, turno y horario.
-*   **`Docente` (Entity):** Representa al personal de enseñanza y su validación de carga horaria (Tope de 4 grupos).
-
-### 5. Módulo de Admisión y Asignación de Carreras
-*   **`InterfazAdmision` (Boundary):** Vista del Coordinador para dar de alta gestiones y configurar cupos de las 4 carreras de la FICCT.
-*   **`ControladorAsignacionCarrera` (Control):** Implementa el algoritmo masivo de asignación de carreras ordenando por nota en orden descendente.
-*   **`Carrera` (Entity):** Contiene el identificador y nombre de las especialidades.
-*   **`CupoGestion` (Entity):** Almacena el límite estricto de estudiantes admitidos por carrera en una gestión específica.
-
----
-
-## 5.4 Análisis de Paquetes
-
-Los paquetes agrupan coherentemente las clases de análisis e indican dependencias funcionales unidireccionales de alto nivel para asegurar el bajo acoplamiento:
+**Descripción del diagrama:** Mapea la distribución de los 13 casos de uso correspondientes al Ciclo 1. Cada caso de uso está contenido de forma lógica e inalterada dentro del paquete correspondiente, garantizando el principio de **cohesión funcional**.
 
 ```plantuml
-@startuml PaquetesAnalisis
-skinparam backgroundColor #FEFEFE
-skinparam roundCorner 8
+@startuml Paquetes_CU_Ciclo1
+left to right direction
+skinparam packageStyle folder
+skinparam backgroundColor transparent
 
 package "Paquete_Autenticacion" as P_Auth {
+  usecase "CU01: Iniciar Sesión" as CU01
+  usecase "CU02: Cerrar Sesión" as CU02
+  usecase "CU03: Recuperar Contraseña" as CU03
+  usecase "CU04: Gestionar Usuarios" as CU04
 }
 
 package "Paquete_Registro_Postulantes" as P_Post {
+  usecase "CU05: Registrar Postulante" as CU05
+  usecase "CU06: Verificar Requisitos" as CU06
+  usecase "CU07: Procesar Pago" as CU07
+  usecase "CU08: Detectar Recurrente" as CU08
+  usecase "CU09: Buscar Postulantes" as CU09
 }
 
 package "Paquete_Planificacion_Academica" as P_Plan {
+  usecase "CU10: Calcular Grupos" as CU10
+  usecase "CU11: Asignar Postulantes" as CU11
+  usecase "CU12: Asignar Docente" as CU12
+  usecase "CU23: Simulacro Examen" as CU23
 }
 
+' Trazabilidad interna
+P_Auth ..> CU01 : <<trace>>
+P_Auth ..> CU02 : <<trace>>
+P_Auth ..> CU03 : <<trace>>
+P_Auth ..> CU04 : <<trace>>
+
+P_Post ..> CU05 : <<trace>>
+P_Post ..> CU06 : <<trace>>
+P_Post ..> CU07 : <<trace>>
+P_Post ..> CU08 : <<trace>>
+P_Post ..> CU09 : <<trace>>
+
+P_Plan ..> CU10 : <<trace>>
+P_Plan ..> CU11 : <<trace>>
+P_Plan ..> CU12 : <<trace>>
+P_Plan ..> CU23 : <<trace>>
+@enduml
+```
+
+*   **Trazabilidad en `Paquete_Autenticacion`:** Este paquete asume la trazabilidad directa de la seguridad transaccional del sistema: el inicio de sesión seguro (CU01), el cierre de sesión y destrucción de tokens JWT (CU02), el flujo automatizado de recuperación de credenciales (CU03) y la administración de perfiles y permisos RBAC del personal (CU04).
+*   **Trazabilidad en `Paquete_Registro_Postulantes`:** Asume la trazabilidad del proceso de registro y formalización del postulante: el alta en formulario web (CU05), la validación biométrica y documental externa con bases públicas (CU06), el cobro digital integrado mediante la pasarela Stripe Checkout (CU07), la prevención sistemática de registros duplicados por CI (CU08) y la grilla de búsqueda avanzada con filtros rápidos (CU09).
+*   **Trazabilidad en `Paquete_Planificacion_Academica`:** Mapea el algoritmo de balanceo y planificación docente: la generación matemática de grupos de 70 personas (CU10), el balanceo equitativo de postulantes por aulas (CU11), la vinculación de docentes calificados sin solapamiento de horarios (CU12) y el simulacro de examen interactivo para familiarizar al postulante con la interfaz del sistema (CU23).
+
+#### B. Relacionar Paquetes y Casos de Uso — CICLO 2
+
+**Descripción del diagrama:** Mapea la distribución de los 10 casos de uso correspondientes al Ciclo 2. Los nuevos módulos funcionales se encapsulan ordenadamente dentro de los paquetes de análisis creados para este ciclo, sin alterar la estructura heredada del Ciclo 1.
+
+```plantuml
+@startuml Paquetes_CU_Ciclo2
+left to right direction
+skinparam packageStyle folder
+skinparam backgroundColor transparent
+
 package "Paquete_Evaluacion" as P_Eval {
+  usecase "CU13: Registrar Notas\n(Administrador)" as CU13
+  usecase "CU14: Cargar Notas\n(CSV Masivo)" as CU14
+  usecase "CU15: Calcular Promedio\nPonderado" as CU15
+  usecase "CU16: Determinar Estado" as CU16
 }
 
 package "Paquete_Admision_Carreras" as P_Admi {
+  usecase "CU17: Asignar Carreras\npor Cupo" as CU17
+  usecase "CU18: Configurar Cupos\npor Carrera" as CU18
 }
 
 package "Paquete_Reportes_IA" as P_Rep {
+  usecase "CU19: Reporte Estructurado" as CU19
+  usecase "CU20: Reporte Dinamico" as CU20
+  usecase "CU21: Reporte por Voz (IA)" as CU21
+  usecase "CU22: Dashboard Estadistico" as CU22
 }
 
-' Relaciones de Dependencia
-P_Post ..> P_Auth : depende de seguridad
-P_Plan ..> P_Post : lee inscritos
-P_Eval ..> P_Plan : lee asignaciones de grupo
-P_Admi ..> P_Eval : consume notas aprobadas
-P_Rep ..> P_Post : genera estadisticas
-P_Rep ..> P_Eval : lee promedios
-P_Rep ..> P_Admi : lee admitidos
+' Trazabilidad interna
+P_Eval ..> CU13 : <<trace>>
+P_Eval ..> CU14 : <<trace>>
+P_Eval ..> CU15 : <<trace>>
+P_Eval ..> CU16 : <<trace>>
+
+P_Admi ..> CU17 : <<trace>>
+P_Admi ..> CU18 : <<trace>>
+
+P_Rep ..> CU19 : <<trace>>
+P_Rep ..> CU20 : <<trace>>
+P_Rep ..> CU21 : <<trace>>
+P_Rep ..> CU22 : <<trace>>
 @enduml
 ```
+
+*   **Trazabilidad en `Paquete_Evaluacion`:** Gobierna la lógica académica evaluativa: el registro excepcional o corrección de calificaciones individuales en planilla por parte de la Jefatura (CU13), el procesamiento masivo de archivos de notas de laboratorios en formato CSV (CU14), la función interna y determinista de promedios ponderados por materia (CU15) y la validación automatizada de los requisitos de aprobación académica por postulante (CU16).
+*   **Trazabilidad en `Paquete_Admision_Carreras`:** Encapsula el proceso resolutivo del preuniversitario del CUP: la ejecución masiva del algoritmo secuencial de asignación de vacantes en orden de mérito y preferencias académicas (CU17) y la definición paramétrica del número de cupos permitidos por carrera y gestión vigente (CU18).
+*   **Trazabilidad en `Paquete_Reportes_IA`:** Centraliza la inteligencia descriptiva e interactiva de la facultad: los reportes oficiales predefinidos (CU19), la generación dinámica de consultas personalizadas (CU20), el generador de reportes inteligentes por voz con NLP (CU21) y el dashboard de control en tiempo real integrado por WebSockets (CU22).
+
+---
+
+### 5.1.4 Vista de Casos de Uso de la Arquitectura (Arquitectura Significativa)
+
+La **Vista de Casos de Uso** (Use Case View) en el Proceso Unificado de Desarrollo de Software constituye la representación fundacional de la arquitectura del sistema. No todos los casos de uso tienen la misma importancia en la fase de análisis; se seleccionan aquellos denominados **Casos de Uso Arquitectónicamente Significativos**, los cuales presentan un impacto estructural crítico, resuelven los mayores riesgos tecnológicos o imponen restricciones de diseño complejas:
+
+#### A. Casos de Uso Significativos del CICLO #1 (Riesgo Arquitectónico y Estructura)
+1.  **`CU01: Iniciar Sesión`:** Fundacional para la arquitectura de seguridad integral. Este caso de uso impone un patrón arquitectónico de control transversal (*cross-cutting concern*). Su diseño de análisis introduce el modelo de control de acceso basado en roles (RBAC) que intercepta de forma obligatoria la comunicación entre todas las clases de interfaz (*Boundary*) y los controladores de control (*Control*), garantizando la tokenización y protección de la sesión de usuario.
+2.  **`CU06: Verificar Requisitos Documentales`:** Mitiga el riesgo de consistencia biográfica y biométrica. Introduce el primer punto de integración en frontera del sistema. En la capa de control, orquesta una validación síncrona mediante peticiones REST contra servicios web externos de entidades públicas (SEGIP/SEDUCA). Afecta directamente la lógica de transición de estados de la entidad `Postulante` (de "Preinscrito" a "Verificado").
+3.  **`CU07: Procesar Pago (Stripe)`:** Diseña la frontera de transacciones asíncronas seguras. Requiere un modelado de comunicación complejo que gestiona el estado asíncrono del pago. El sistema delega la captura de datos a la pasarela Stripe, y el backend debe procesar los eventos mediante Webhooks que actualizan de forma persistente y segura la entidad `Postulante` a "Inscrito" e insertan un registro inmutable en `Pago`.
+4.  **`CU10: Calcular y Crear Grupos Automáticamente`:** Resuelve el riesgo logístico de volumen. Implementa el algoritmo de balanceo y cálculo matemático de aulas. En la capa de control, lee masivamente la entidad `Postulante` en estado "Inscrito", calcula el límite con cota estricta de 70 personas por aula, genera dinámicamente las entidades `Grupo` necesarias y las vincula equitativamente, garantizando que no existan inconsistencias horarias ni de infraestructura.
+
+#### B. Casos de Uso Significativos del CICLO #2 (Procesamiento Masivo e Inteligencia)
+1.  **`CU14: Cargar Notas Masivas (CSV)`:** Caso de alta carga transaccional y validación por lotes. El controlador de evaluación debe procesar miles de registros delimitados por comas desde archivos planos, mapear las notas biunívocamente a los postulantes existentes en base de datos, validar rangos numéricos estrictos de 0-100 en memoria, y persistir de forma atómica y segura las notas, mitigando riesgos de inconsistencias ante interrupciones de red.
+2.  **`CU17: Asignación de Carreras por Cupo`:** Lógica de negocio más sensible y de alto impacto académico. Ejecuta una secuencia algorítmica compleja que ordena masivamente a miles de postulantes en estado "Aprobado" de mayor a menor promedio general. Utiliza operaciones concurrentes para decrementar dinámicamente los cupos disponibles en la entidad `CupoGestion` y asignar la carrera correspondiente a los postulantes según sus opciones de preferencia (1ª y 2ª opción) hasta agotar las plazas, requiriendo aislamiento estricto de transacciones en base de datos.
+3.  **`CU21: Generar Reporte por Voz (IA)`:** Integra capacidades inteligentes de procesamiento de lenguaje natural (NLP). Su arquitectura de análisis desacopla la captura de eventos de audio en el navegador (Web Speech API) y los delega a un controlador inteligente de IA que se comunica con servicios cognitivos (OpenAI Cloud) para interpretar la intención y los parámetros semánticos del usuario, mapeándolos dinámicamente a consultas SQL estructuradas y seguras.
+4.  **`CU22: Consultar Dashboard Estadístico en Tiempo Real`:** Demanda comunicación persistente y bidireccional de alto rendimiento. En lugar de un modelo tradicional de consulta-respuesta que sobrecargaría el servidor de base de datos, implementa una arquitectura basada en eventos mediante WebSockets en tiempo real que sincroniza las fluctuaciones de calificaciones e inscritos directamente con la interfaz del Coordinador.
+
+---
+-- LOS VISTA DE CASO DE USO ASUMIMOS LO CREAMOS LA IA TIENEE ERRORES AL GENERARLO CON PLANT TEXT Y SE ME ACABARON LOS TOKENS PE 
+
+
+
+## 5.2 Casos de Uso (Diagramas de Comunicación)
+
+Los diagramas de comunicación de análisis ilustran cómo colaboran dinámicamente los objetos de tipo Boundary (Interfaz), Control y Entity (Entidad) para realizar la lógica específica de cada caso de uso de manera pura y abstracta, independientemente del entorno tecnológico de implementación. De acuerdo con el enfoque metodológico del Proceso Unificado de Desarrollo de Software (PUDS), el análisis se ejecuta y madura iterativamente a través de los ciclos de desarrollo. A continuación se presentan las realizaciones de análisis organizadas y detalladas por ciclo, expandiendo sus descripciones y flujos de mensajes:
+
+### 5.2.1 Realizaciones de Análisis — CICLO 1 (Seguridad, Inscripción y Planificación Académica)
+
+El primer ciclo cubre los cimientos del sistema: la autenticación de usuarios, la preinscripción del postulante, la validación documental y de identidad en frontera mediante APIs externas, la integración segura con Stripe y el algoritmo dinámico de cálculo de grupos. A continuación se detallan los diagramas de comunicación para los casos de uso de este ciclo:
+
+#### Realización de Análisis para CU01: Iniciar Sesión
+
+**Descripción detallada de la colaboración y dinámica:**
+El flujo inicia cuando el actor *Usuario* interactúa con la `InterfazLogin`. La frontera solicita la acción al controlador correspondiente, el cual orquesta la lógica de negocio, consulta o actualiza las entidades involucradas y devuelve el resultado a la interfaz para informar al usuario.
+
+```plantuml
+@startuml Com_CU01
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Usuario del Sistema" as Act
+boundary "IU_Login" as B_Int
+control "CTR_Auth" as C_Ctrl
+entity "CE_Usuario" as E_Usu
+entity "CE_BitacoraAcceso" as E_Bit
+
+Act --> B_Int : 1: + Ingresar email y password
+B_Int --> C_Ctrl : 2: + login(email, password)
+C_Ctrl --> E_Usu : 3: + select_where(email)
+E_Usu --> C_Ctrl : 4: + Datos y Hash
+C_Ctrl --> E_Bit : 5: + RegistrarLoginExitoso()
+C_Ctrl --> B_Int : 6: + Redirigir a Home
+B_Int --> Act : 7: + MostrarHome()
+@enduml
+```
+
+#### Realización de Análisis para CU02: Cerrar Sesión
+
+**Descripción detallada de la colaboración y dinámica:**
+El flujo inicia cuando el actor *Usuario* interactúa con la `InterfazPrincipal`. La frontera solicita la acción al controlador correspondiente, el cual orquesta la lógica de negocio, consulta o actualiza las entidades involucradas y devuelve el resultado a la interfaz para informar al usuario.
+
+```plantuml
+@startuml Com_CU02
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Usuario" as Act
+boundary "IU_Principal" as B_Int
+control "CTR_Auth" as C_Ctrl
+entity "CE_BitacoraAcceso" as E_Bit
+
+Act --> B_Int : 1: + SolicitarCerrarSesion()
+B_Int --> C_Ctrl : 2: + InvalidarSesion(token)
+C_Ctrl --> E_Bit : 3: + RegistrarLogout()
+C_Ctrl --> B_Int : 4: + ConfirmarCierre()
+B_Int --> Act : 5: + MostrarPantallaLogin()
+@enduml
+```
+
+#### Realización de Análisis para CU03: Recuperar Contraseña
+
+**Descripción detallada de la colaboración y dinámica:**
+El flujo inicia cuando el actor *Usuario* interactúa con la `InterfazRecuperacion`. La frontera solicita la acción al controlador correspondiente, el cual orquesta la lógica de negocio, consulta o actualiza las entidades involucradas y devuelve el resultado a la interfaz para informar al usuario.
+
+```plantuml
+@startuml Com_CU03
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Usuario" as Act
+boundary "IU_Recuperacion" as B_Int
+control "CTR_Auth" as C_Ctrl
+entity "CE_Usuario" as E_Usu
+
+Act --> B_Int : 1: + IngresarCorreo(correo)
+B_Int --> C_Ctrl : 2: + GenerarTokenRecuperacion(correo)
+C_Ctrl --> E_Usu : 3: + ValidarExistenciaCorreo(correo)
+E_Usu --> C_Ctrl : 4: + DatosExistencia
+C_Ctrl --> C_Ctrl : 5: + EnviarEmailRecuperacion()
+C_Ctrl --> B_Int : 6: + ConfirmarEnvio()
+B_Int --> Act : 7: + MostrarMensajeExito()
+@enduml
+```
+
+#### Realización de Análisis para CU04: Gestionar Perfiles de Usuario
+
+**Descripción detallada de la colaboración y dinámica:**
+El flujo inicia cuando el actor *Administrador* interactúa con la `InterfazUsuarios`. La frontera solicita la acción al controlador correspondiente, el cual orquesta la lógica de negocio, consulta o actualiza las entidades involucradas y devuelve el resultado a la interfaz para informar al usuario.
+
+```plantuml
+@startuml Com_CU04
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Administrador" as Act
+boundary "IU_Usuarios" as B_Int
+control "CTR_Usuarios" as C_Ctrl
+entity "CE_Usuario" as E_Usu
+entity "CE_BitacoraAcceso" as E_Bit
+
+Act --> B_Int : 1: + RegistrarNuevoUsuario(datos)
+B_Int --> C_Ctrl : 2: + CrearUsuario(datos)
+C_Ctrl --> E_Usu : 3: + ValidarNoDuplicado(correo)
+E_Usu --> C_Ctrl : 4: + ResultadoValidacion
+C_Ctrl --> E_Usu : 5: + GuardarNuevoUsuario()
+C_Ctrl --> E_Bit : 6: + RegistrarAccionAdmin()
+C_Ctrl --> B_Int : 7: + RetornarExito()
+B_Int --> Act : 8: + ActualizarListaUsuarios()
+@enduml
+```
+
+#### Realización de Análisis para CU05: Registrar Postulante
+
+**Descripción detallada de la colaboración y dinámica:**
+El flujo inicia cuando el actor *Postulante* interactúa con la `InterfazPreinscripcion`. La frontera solicita la acción al controlador correspondiente, el cual orquesta la lógica de negocio, consulta o actualiza las entidades involucradas y devuelve el resultado a la interfaz para informar al usuario.
+
+```plantuml
+@startuml Com_CU05
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Postulante" as Act
+boundary "IU_Preinscripcion" as B_Int
+control "CTR_Preinscripcion" as C_Ctrl
+entity "CE_Postulante" as E_Post
+
+Act --> B_Int : 1: + CompletarFormularioRegistro(datos)
+B_Int --> C_Ctrl : 2: + ProcesarRegistro(datos)
+C_Ctrl --> E_Post : 3: + CrearPerfilPostulante()
+C_Ctrl --> E_Post : 4: + GuardarPreferenciasCarrera()
+C_Ctrl --> B_Int : 5: + RetornarPostulanteCreado()
+B_Int --> Act : 6: + MostrarPasosSiguientes()
+@enduml
+```
+
+#### Realización de Análisis para CU06: Verificar Requisitos Automáticamente
+
+**Descripción detallada de la colaboración y dinámica:**
+El flujo inicia cuando el *Sistema* dispara automáticamente la verificación a través de la `InterfazPreinscripcion`. La frontera delega al `ControladorPreinscripcion`, el cual consulta las APIs externas de SEGIP y SEDUCA para validar la identidad y el bachillerato del postulante, y actualiza el estado del expediente en la entidad `Postulante`.
+
+```plantuml
+@startuml Com_CU06
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Sistema" as Act
+boundary "IU_Preinscripcion" as B_Int
+control "CTR_Preinscripcion" as C_Ctrl
+entity "CE_Postulante" as E_Post
+boundary "API SEGIP" as B_SEGIP <<boundary>>
+boundary "API SEDUCA" as B_SEDUCA <<boundary>>
+
+Act --> B_Int : 1: + IniciarVerificacionAutomatica()
+B_Int --> C_Ctrl : 2: + VerificarIdentidad(ci, fecha_nac)
+C_Ctrl --> B_SEGIP : 3: + ConsultarIdentidad(ci)
+B_SEGIP --> C_Ctrl : 4: + ConfirmacionIdentidad
+C_Ctrl --> B_SEDUCA : 5: + ConsultarBachiller(ci)
+B_SEDUCA --> C_Ctrl : 6: + ConfirmacionBachiller
+C_Ctrl --> E_Post : 7: + ActualizarEstado(Verificado)
+C_Ctrl --> B_Int : 8: + ConfirmarVerificacion()
+B_Int --> Act : 9: + NotificarVerificacionCompleta()
+@enduml
+```
+
+#### Realización de Análisis para CU08: Detectar Postulante Recurrente
+
+**Descripción detallada de la colaboración y dinámica:**
+El flujo inicia cuando el actor *Postulante* interactúa con la `InterfazPreinscripcion`. La frontera solicita la acción al controlador correspondiente, el cual orquesta la lógica de negocio, consulta o actualiza las entidades involucradas y devuelve el resultado a la interfaz para informar al usuario.
+
+```plantuml
+@startuml Com_CU08
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Postulante" as Act
+boundary "IU_Preinscripcion" as B_Int
+control "CTR_Preinscripcion" as C_Ctrl
+entity "CE_Postulante" as E_Post
+
+Act --> B_Int : 1: + IngresarCI(ci)
+B_Int --> C_Ctrl : 2: + VerificarPostulanteExistente(ci)
+C_Ctrl --> E_Post : 3: + BuscarRegistroAnterior(ci)
+E_Post --> C_Ctrl : 4: + RegistroAnterior
+C_Ctrl --> B_Int : 5: + RetornarEstadoDuplicado(true)
+B_Int --> Act : 6: + MostrarAlertaRecurrente()
+@enduml
+```
+
+#### Realización de Análisis para CU09: Buscar y Consultar Postulantes
+
+**Descripción detallada de la colaboración y dinámica:**
+El flujo inicia cuando el actor *Administrador* interactúa con la `InterfazBusqueda`. La frontera delega al `ControladorBusqueda`, el cual ejecuta la consulta filtrada sobre la entidad `Postulante` y retorna los resultados para renderizar la grilla de datos.
+
+```plantuml
+@startuml Com_CU09
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Administrador" as Act
+boundary "IU_Busqueda" as B_Int
+control "CTR_Busqueda" as C_Ctrl
+entity "CE_Postulante" as E_Post
+
+Act --> B_Int : 1: + IngresarFiltros(criterio)
+B_Int --> C_Ctrl : 2: + BuscarPostulantes(criterio)
+C_Ctrl --> E_Post : 3: + EjecutarConsulta(criterio)
+E_Post --> C_Ctrl : 4: + ListaResultados
+C_Ctrl --> B_Int : 5: + RetornarResultados(lista)
+B_Int --> Act : 6: + RenderizarGrillaResultados()
+@enduml
+```
+
+#### Realización de Análisis para CU11: Asignar Postulantes a Grupos
+
+**Descripción detallada de la colaboración y dinámica:**
+El flujo inicia cuando el actor *Administrador* interactúa con la `InterfazGrupos`. La frontera delega al `ControladorPlanificacion`, el cual obtiene al postulante, verifica la capacidad del grupo destino y actualiza el vínculo en la entidad asociativa `AsignacionGrupo`.
+
+```plantuml
+@startuml Com_CU11
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Administrador" as Act
+boundary "IU_Grupos" as B_Int
+control "CTR_Planificacion" as C_Ctrl
+entity "CE_Postulante" as E_Post
+entity "CE_Grupo" as E_Grupo
+entity "CE_AsignacionGrupo" as E_Asig
+
+Act --> B_Int : 1: + SolicitarAjusteGrupo(postulanteId, nuevoGrupoId)
+B_Int --> C_Ctrl : 2: + ReasignarPostulante(postulanteId, nuevoGrupoId)
+C_Ctrl --> E_Post : 3: + ObtenerPostulante(postulanteId)
+E_Post --> C_Ctrl : 4: + DatosPostulante
+C_Ctrl --> E_Grupo : 5: + VerificarCapacidad(nuevoGrupoId)
+E_Grupo --> C_Ctrl : 6: + CapacidadDisponible
+C_Ctrl --> E_Asig : 7: + ActualizarVinculoGrupo()
+C_Ctrl --> B_Int : 8: + RetornarExito()
+B_Int --> Act : 9: + ActualizarListaGrupo()
+@enduml
+```
+
+#### Realización de Análisis para CU12: Asignar Docente a Grupo
+
+**Descripción detallada de la colaboración y dinámica:**
+El flujo inicia cuando el actor *Administrador* interactúa con la `InterfazDocentes`. La frontera delega al `ControladorPlanificacion`, el cual verifica la carga horaria del docente, valida su especialidad contra la materia solicitada y registra la asignación en la entidad `Grupo`.
+
+```plantuml
+@startuml Com_CU12
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Administrador" as Act
+boundary "IU_Docentes" as B_Int
+control "CTR_Planificacion" as C_Ctrl
+entity "CE_Docente" as E_Doc
+entity "CE_Grupo" as E_Grupo
+entity "CE_Materia" as E_Mat
+
+Act --> B_Int : 1: + AsignarDocente(docenteId, grupoId, materiaId)
+B_Int --> C_Ctrl : 2: + VincularDocenteMateria(docenteId, grupoId, materiaId)
+C_Ctrl --> E_Doc : 3: + VerificarCargaHoraria(docenteId)
+E_Doc --> C_Ctrl : 4: + CargaHorariaValida
+C_Ctrl --> E_Mat : 5: + ValidarEspecialidad(docenteId, materiaId)
+E_Mat --> C_Ctrl : 6: + EspecialidadValida
+C_Ctrl --> E_Grupo : 7: + RegistrarAsignacionMateria()
+C_Ctrl --> B_Int : 8: + RetornarExito()
+B_Int --> Act : 9: + ActualizarMatrizDocente()
+@enduml
+```
+
+#### Realización de Análisis para CU23: Realizar Simulacro de Examen
+
+**Descripción detallada de la colaboración y dinámica:**
+El flujo inicia cuando el actor *Postulante* interactúa con la `InterfazSimulacro`. La frontera delega al `ControladorSimulacro`, el cual obtiene preguntas aleatorias de la entidad `PreguntaSimulacro`, las presenta con temporizador, recibe las respuestas y califica el resultado devolviendo la nota simulada.
+
+```plantuml
+@startuml Com_CU23
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Postulante" as Act
+boundary "IU_Simulacro" as B_Int
+control "CTR_Simulacro" as C_Ctrl
+entity "CE_PreguntaSimulacro" as E_Preg
+
+Act --> B_Int : 1: + IniciarSimulacro()
+B_Int --> C_Ctrl : 2: + GenerarPreguntasSimulacro()
+C_Ctrl --> E_Preg : 3: + ObtenerBancoPreguntas()
+E_Preg --> C_Ctrl : 4: + ListaPreguntas
+C_Ctrl --> B_Int : 5: + RetornarPreguntas()
+B_Int --> Act : 6: + MostrarTemporizadorYPreguntas()
+Act --> B_Int : 7: + EnviarRespuestas(respuestas)
+B_Int --> C_Ctrl : 8: + CalificarSimulacro(respuestas)
+C_Ctrl --> B_Int : 9: + RetornarNotaSimulacro()
+B_Int --> Act : 10: + MostrarResultadosSimulacro()
+@enduml
+```
+
+
+#### Realización de Análisis para CU07: Procesar Pago de Matrícula (Stripe)
+
+**Descripción detallada de la colaboración y dinámica:**
+El flujo comienza cuando el actor *Postulante* solicita el pago de su matrícula desde la interfaz de usuario (`InterfazInscripcion`). La frontera delega la solicitud al `ControladorInscripcion`, el cual se comunica con la `PasarelaStripe` para inicializar una sesión de pago segura con el monto correspondiente. El controlador recibe la URL de redirección y ordena a la interfaz redirigir al postulante a la pasarela externa. Una vez que el postulante ingresa su tarjeta y confirma el pago, la pasarela procesa el cargo y notifica de forma asíncrona mediante un Webhook al `ControladorInscripcion`. El controlador valida la autenticidad del webhook, crea el registro físico en la entidad `Pago` y actualiza el estado del postulante a "Inscrito" en la entidad `Postulante`.
+
+```plantuml
+@startuml Com_CU07
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Postulante" as Act
+boundary "IU_Inscripcion" as B_Insc
+control "CTR_Inscripcion" as C_Insc
+boundary "PasarelaStripe" as B_Stripe <<boundary>>
+entity "CE_Pago" as E_Pago
+entity "CE_Postulante" as E_Post
+
+Act --> B_Insc : 1: + Solicitar pago de matrícula()
+B_Insc --> C_Insc : 2: + IniciarProcesoPago(postulanteId)
+C_Insc --> B_Stripe : 3: + CrearSesionPago(monto)
+B_Stripe --> C_Insc : 4: + UrlRedireccionSesion
+C_Insc --> B_Insc : 5: + RedirigirAPasarela()
+B_Insc --> Act : 6: + MostrarFormularioPagoStripe()
+Act --> B_Stripe : 7: + ConfirmarDatosTarjeta()
+B_Stripe --> C_Insc : 8: + NotificarPagoExitoso(StripeWebhook)
+C_Insc --> E_Pago : 9: + CrearRegistroPago(monto, transaccionId)
+C_Insc --> E_Post : 10: + ActualizarEstado("Inscrito")
+@enduml
+```
+
+#### Realización de Análisis para CU10: Calcular y Crear Grupos Automáticamente
+
+**Descripción detallada de la colaboración y dinámica:**
+Este caso de uso es invocado por el *Administrador* para balancear la carga de alumnos de forma automática. Al presionar el comando en la interfaz (`InterfazGrupos`), el `ControladorGrupos` inicia el cálculo y distribución masiva. Primero consulta a la entidad `Postulante` para extraer a todos los aspirantes en estado "Inscrito" que carecen de aula/grupo. El controlador calcula el número de aulas necesarias dividiendo la cantidad total entre el límite estricto de 70 personas por aula. Luego, genera dinámicamente las entidades `Grupo` en la base de datos. Una vez creados los grupos, el controlador ejecuta en memoria el balanceo equitativo y registra la asignación en la entidad asociativa `AsignacionGrupo`, cambiando el estado del postulante a "En Evaluación" en la entidad `Postulante`. Finalmente, la interfaz se refresca y confirma la distribución exitosa.
+
+```plantuml
+@startuml Com_CU10
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Administrador" as Act
+boundary "IU_Grupos" as B_Grup
+control "CTR_Planificacion" as C_Plan
+entity "CE_Postulante" as E_Post
+entity "CE_Grupo" as E_Grupo
+entity "CE_Aula" as E_Aula
+entity "CE_AsignacionGrupo" as E_Asig
+
+Act --> B_Grup : 1: + EjecutarCalculoAsignacion()
+B_Grup --> C_Plan : 2: + IniciarAsignacionMasiva()
+C_Plan --> E_Post : 3: + ObtenerPostulantesInscritosSinGrupo()
+E_Post --> C_Plan : 4: + ListaPostulantes
+C_Plan --> C_Plan : 5: + CalcularGruposNecesarios(CEIL(Total/70))
+C_Plan --> E_Aula : 6: + VerificarDisponibilidadAulas()
+E_Aula --> C_Plan : 7: + AulasDisponibles
+C_Plan --> E_Grupo : 8: + CrearNuevosGrupos(cantidad, horarios)
+C_Plan --> C_Plan : 9: + CalcularDistribucionEquitativa()
+C_Plan --> E_Asig : 10: + VincularPostulanteAGrupo(postulanteId, grupoId)
+C_Plan --> E_Post : 11: + ActualizarEstado("En Evaluación")
+C_Plan --> B_Grup : 12: + ConfirmarAsignacionExitosa()
+B_Grup --> Act : 13: + MostrarGruposConPostulantes()
+@enduml
+```
+
+---
+
+### 5.2.2 Realizaciones de Análisis — CICLO 2 (Gestión Académica, Admisión e Inteligencia Analítica)
+
+El segundo ciclo implementa el núcleo evaluativo del preuniversitario, el algoritmo determinista y meritocrático de asignación de vacantes y la capa inteligente de reportes gerenciales. A continuación se presentan las realizaciones de análisis de sus casos de uso:
+
+#### Realización de Análisis para CU13: Registrar Notas de Examen (Individual)
+
+**Descripción detallada de la colaboración y dinámica:**
+El flujo inicia cuando el actor *Administrador* interactúa con la `InterfazNotas`. La frontera solicita la acción al controlador correspondiente, el cual orquesta la lógica de negocio, consulta o actualiza las entidades involucradas y devuelve el resultado a la interfaz para informar al usuario.
+
+```plantuml
+@startuml Com_CU13
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Administrador" as Act
+boundary "IU_Notas" as B_Int
+control "CTR_Evaluacion" as C_Ctrl
+entity "CE_Examen" as E_Exam
+entity "CE_NotaFinal" as E_Nota
+entity "CE_BitacoraAcceso" as E_Bit
+
+Act --> B_Int : 1: + ModificarNota(postulanteId, materia, nuevaNota)
+B_Int --> C_Ctrl : 2: + ActualizarNotaIndividual(postulanteId, materia, nuevaNota)
+C_Ctrl --> E_Exam : 3: + GuardarNota(materia, nuevaNota)
+C_Ctrl --> C_Ctrl : 4: + RecalcularPromedio()
+C_Ctrl --> E_Nota : 5: + ActualizarPromedio()
+C_Ctrl --> E_Bit : 6: + RegistrarAjusteManual()
+C_Ctrl --> B_Int : 7: + RetornarExito()
+B_Int --> Act : 8: + ActualizarPlanillaNotas()
+@enduml
+```
+
+#### Realización de Análisis para CU15: Calcular Promedio Ponderado
+
+**Descripción detallada de la colaboración y dinámica:**
+El flujo inicia cuando el actor *Sistema* interactúa con la `InterfazNotas`. La frontera solicita la acción al controlador correspondiente, el cual orquesta la lógica de negocio, consulta o actualiza las entidades involucradas y devuelve el resultado a la interfaz para informar al usuario.
+
+```plantuml
+@startuml Com_CU15
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Sistema" as Act
+boundary "IU_Notas" as B_Int
+control "CTR_Evaluacion" as C_Ctrl
+entity "CE_Examen" as E_Exam
+entity "CE_NotaFinal" as E_Nota
+
+Act --> B_Int : 1: + SolicitarCalculoGlobal()
+B_Int --> C_Ctrl : 2: + EjecutarCalculoPromedios()
+C_Ctrl --> E_Exam : 3: + ObtenerNotasPorMateria()
+E_Exam --> C_Ctrl : 4: + NotasMateria
+C_Ctrl --> C_Ctrl : 5: + AplicarFormulaPonderacion()
+C_Ctrl --> E_Nota : 6: + GuardarPromedioFinal()
+C_Ctrl --> B_Int : 7: + RetornarExito()
+B_Int --> Act : 8: + RefrescarVistaPromedios()
+@enduml
+```
+
+#### Realización de Análisis para CU16: Determinar Estado (Aprobado/Reprobado)
+
+**Descripción detallada de la colaboración y dinámica:**
+El flujo inicia cuando el actor *Sistema* interactúa con la `InterfazNotas`. La frontera solicita la acción al controlador correspondiente, el cual orquesta la lógica de negocio, consulta o actualiza las entidades involucradas y devuelve el resultado a la interfaz para informar al usuario.
+
+```plantuml
+@startuml Com_CU16
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Sistema" as Act
+boundary "IU_Notas" as B_Int
+control "CTR_Evaluacion" as C_Ctrl
+entity "CE_NotaFinal" as E_Nota
+entity "CE_Postulante" as E_Post
+
+Act --> B_Int : 1: + EjecutarDeterminacionEstado()
+B_Int --> C_Ctrl : 2: + EvaluarAprobacionMasiva()
+C_Ctrl --> E_Nota : 3: + ObtenerPromediosCalculados()
+E_Nota --> C_Ctrl : 4: + PromediosCalculados
+C_Ctrl --> C_Ctrl : 5: + ValidarUmbral(>=60)
+C_Ctrl --> E_Post : 6: + ActualizarEstado(Aprobado/Reprobado)
+C_Ctrl --> B_Int : 7: + RetornarExito()
+B_Int --> Act : 8: + MostrarBadgesEstado()
+@enduml
+```
+
+#### Realización de Análisis para CU18: Configurar Cupos por Carrera
+
+**Descripción detallada de la colaboración y dinámica:**
+El flujo inicia cuando el actor *Administrador* interactúa con la `InterfazConfiguracion`. La frontera solicita la acción al controlador correspondiente, el cual orquesta la lógica de negocio, consulta o actualiza las entidades involucradas y devuelve el resultado a la interfaz para informar al usuario.
+
+```plantuml
+@startuml Com_CU18
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Administrador" as Act
+boundary "IU_Configuracion" as B_Int
+control "CTR_Asignacion" as C_Ctrl
+entity "CE_CupoGestion" as E_Cupo
+
+Act --> B_Int : 1: + EstablecerLimites(cuposPorCarrera)
+B_Int --> C_Ctrl : 2: + ActualizarCupos(cuposPorCarrera)
+C_Ctrl --> E_Cupo : 3: + GuardarNuevosLimites()
+C_Ctrl --> B_Int : 4: + RetornarConfirmacion()
+B_Int --> Act : 5: + MostrarMensajeGuardado()
+@enduml
+```
+
+#### Realización de Análisis para CU19: Generar Reporte Estructurado
+
+**Descripción detallada de la colaboración y dinámica:**
+El flujo inicia cuando el actor *Coordinador* interactúa con la `InterfazReportes`. La frontera solicita la acción al controlador correspondiente, el cual orquesta la lógica de negocio, consulta o actualiza las entidades involucradas y devuelve el resultado a la interfaz para informar al usuario.
+
+```plantuml
+@startuml Com_CU19
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Coordinador" as Act
+boundary "IU_Reportes" as B_Int
+control "CTR_Reportes" as C_Ctrl
+entity "CE_Admision" as E_Admi
+entity "CE_Postulante" as E_Post
+
+Act --> B_Int : 1: + SeleccionarPlantillaReporte(tipo)
+B_Int --> C_Ctrl : 2: + GenerarReporteEstructurado(tipo)
+C_Ctrl --> E_Admi : 3: + ConsultarDatosAdmision()
+E_Admi --> C_Ctrl : 4: + DatosAdmision
+C_Ctrl --> E_Post : 5: + CruzarDatosPostulantes()
+E_Post --> C_Ctrl : 6: + DatosPostulantes
+C_Ctrl --> C_Ctrl : 7: + FormatearPDF()
+C_Ctrl --> B_Int : 8: + RetornarDocumento()
+B_Int --> Act : 9: + MostrarPrevisualizacionPDF()
+@enduml
+```
+
+#### Realización de Análisis para CU20: Generar Reporte Dinámico
+
+**Descripción detallada de la colaboración y dinámica:**
+El flujo inicia cuando el actor *Coordinador* interactúa con la `InterfazReportesDinamicos`. La frontera solicita la acción al controlador correspondiente, el cual orquesta la lógica de negocio, consulta o actualiza las entidades involucradas y devuelve el resultado a la interfaz para informar al usuario.
+
+```plantuml
+@startuml Com_CU20
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Coordinador" as Act
+boundary "IU_ReportesDinamicos" as B_Int
+control "CTR_Reportes" as C_Ctrl
+entity "CE_DataWarehouse" as E_Data
+
+Act --> B_Int : 1: + ConfigurarFiltrosYCampos(parametros)
+B_Int --> C_Ctrl : 2: + EjecutarConsultaDinamica(parametros)
+C_Ctrl --> E_Data : 3: + ConsultarBaseDeDatosBI(parametros)
+E_Data --> C_Ctrl : 4: + DatosBI
+C_Ctrl --> B_Int : 5: + RetornarTablaResultados()
+B_Int --> Act : 6: + RenderizarDataGrid()
+@enduml
+```
+
+#### Realización de Análisis para CU21: Reporte por Voz (IA)
+
+**Descripción detallada de la colaboración y dinámica:**
+El flujo inicia cuando el actor *Coordinador* interactúa con la `InterfazVoz`. La frontera solicita la acción al controlador correspondiente, el cual orquesta la lógica de negocio, consulta o actualiza las entidades involucradas y devuelve el resultado a la interfaz para informar al usuario.
+
+```plantuml
+@startuml Com_CU21
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Coordinador" as Act
+boundary "IU_Voz" as B_Int
+control "CTR_ReportesIA" as C_Ctrl
+entity "CE_ServicioCognitivoIA" as B_IA
+entity "CE_DataWarehouse" as E_Data
+
+Act --> B_Int : 1: + EmitirComandoVoz(audio)
+B_Int --> C_Ctrl : 2: + ProcesarAudioNLP(audio)
+C_Ctrl --> B_IA : 3: + TraducirIntencionASQL(audio)
+B_IA --> C_Ctrl : 4: + RetornarConsultaEstructurada()
+C_Ctrl --> E_Data : 5: + EjecutarConsultaGenerada()
+E_Data --> C_Ctrl : 6: + ResultadosSQL
+C_Ctrl --> B_Int : 7: + RetornarResultados()
+B_Int --> Act : 8: + MostrarResultadosVoz()
+@enduml
+```
+
+
+#### Realización de Análisis para CU14: Cargar Notas Masivamente (CSV)
+
+**Descripción detallada de la colaboración y dinámica:**
+El *Administrador* selecciona un archivo de notas plano exportado de los laboratorios locales y lo carga mediante la `InterfazNotas`. Esta frontera transmite el archivo al `ControladorEvaluacion`, el cual abre una transacción y realiza un ciclo de lectura sobre las filas del CSV. Para cada registro, consulta la existencia del estudiante en la entidad `Postulante` mediante su CI. Si es válido, inserta o actualiza la nota correspondiente en la entidad `Examen` (registrando materia y número de examen). El controlador ejecuta la fórmula de ponderación (30% Ex1 + 30% Ex2 + 40% Ex3) y persiste el promedio en la entidad `NotaFinal` junto a su estado (APROBADO/REPROBADO), verificando que la aprobación sea individual por materia. Cada inserción y actualización es anotada en la entidad de auditoría `BitacoraAcceso` para mitigar riesgos de manipulación indebida de calificaciones.
+
+```plantuml
+@startuml Com_CU14
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Administrador" as Act
+boundary "IU_Notas" as B_Nota
+control "CTR_Evaluacion" as C_Eval
+entity "CE_Postulante" as E_Post
+entity "CE_Examen" as E_Exam
+entity "CE_NotaFinal" as E_Nota
+entity "CE_BitacoraAcceso" as E_Bit
+
+Act --> B_Nota : 1: + CargarArchivoCSV(file)
+B_Nota --> C_Eval : 2: + ProcesarCargaCSV(file)
+C_Eval --> E_Post : 3: + ObtenerPorCI(ci)
+E_Post --> C_Eval : 4: + DatosPostulante
+C_Eval --> E_Exam : 5: + RegistrarNotaExamen(nota, numero)
+C_Eval --> C_Eval : 6: + CalcularPromedioPonderado()
+C_Eval --> E_Nota : 7: + ActualizarNotaFinal(promedio, estado)
+C_Eval --> E_Bit : 8: + RegistrarOperacionCSV(usuarioId, log)
+C_Eval --> B_Nota : 9: + ConfirmarCargaExitosa(resumen)
+B_Nota --> Act : 10: + MostrarResumenCarga()
+@enduml
+```
+
+#### Realización de Análisis para CU17: Asignar Carreras por Cupo
+
+**Descripción detallada de la colaboración y dinámica:**
+El *Coordinador* de la facultad inicia el algoritmo masivo desde la `InterfazAdmision`. El `ControladorAsignacionCarrera` inicia una transacción aislada en base de datos. Consulta en la entidad `Postulante` y sus relaciones para obtener a todos los postulantes con estado global "Aprobado", ordenados de forma descendente por su promedio general general (garantizando el principio de meritocracia). Para cada postulante aprobado, el controlador consulta a la entidad `CupoGestion` para evaluar la disponibilidad de plazas en su carrera de primera opción. Si existen vacantes, crea un registro de ingreso en la entidad `Admision` y decrementa el stock de cupos en `CupoGestion`. Si la primera opción se encuentra agotada, repite la validación contra su segunda opción de carrera. En caso de que ambas opciones estén saturadas de postulantes con mejores calificaciones, el controlador actualiza el estado del postulante a "Pendiente Reasignacion" y dispara un log de advertencia en `BitacoraAcceso` para su posterior evaluación manual.
+
+```plantuml
+@startuml Com_CU17
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Coordinador" as Act
+boundary "IU_Admision" as B_Admi
+control "CTR_AsignacionCarrera" as C_Asig
+entity "CE_Postulante" as E_Post
+entity "CE_CupoGestion" as E_Cupo
+entity "CE_Carrera" as E_Carr
+entity "CE_Admision" as E_Admi
+entity "CE_BitacoraAcceso" as E_Bit
+
+Act --> B_Admi : 1: + ProcesarAsignacionCarreras()
+B_Admi --> C_Asig : 2: + IniciarAsignacionMasiva()
+C_Asig --> E_Post : 3: + ObtenerAprobadosOrdenadosPorPromedio()
+E_Post --> C_Asig : 4: + ListaAprobados
+loop Para cada postulante aprobado
+  C_Asig --> E_Cupo : 5: + VerificarCupoDisponible(carreraId)
+  E_Cupo --> C_Asig : 6: + CupoDisponible
+  alt Cupo disponible > 0
+    C_Asig --> E_Admi : 7: + RegistrarAdmision(postulanteId, carreraId, via)
+    C_Asig --> E_Cupo : 8: + DecrementarCuposDisponibles(carreraId)
+  else Cupos agotados en 1ra y 2da opción
+    C_Asig --> E_Post : 9: + MarcarPendienteReasignacion()
+    C_Asig --> E_Bit : 10: + RegistrarAlertaCuposLlenos(ci, promedio)
+  end
+end
+C_Asig --> B_Admi : 11: + ConfirmarProcesamientoExito()
+B_Admi --> Act : 12: + MostrarResultadosYAlertas()
+@enduml
+```
+
+#### Realización de Análisis para CU22: Consultar Dashboard Estadístico en Tiempo Real
+
+**Descripción detallada de la colaboración y dinámica:**
+El *Coordinador* accede a la `InterfazDashboard` para monitorear el preuniversitario en vivo. La interfaz solicita la actualización inmediata de métricas al `ControladorReportes`. Este controlador ejecuta consultas agregadas optimizadas sobre la entidad `Postulante` (para contar inscritos por sexo y colegio), sobre `NotaFinal` (para obtener promedios por grupo y porcentajes de aprobación) y sobre `CupoGestion` (para calcular el avance visual de llenado de carreras). El controlador envía la estructura consolidada a la interfaz, la cual renderiza de forma elegante gráficos circulares y de barras. Además, el controlador establece una suscripción activa de WebSocket con la frontera, transmitiendo eventos de fluctuación en vivo a medida que los docentes registran notas o el algoritmo asigna carreras, manteniendo el dashboard actualizado sin requerir recargas de página.
+
+```plantuml
+@startuml Com_CU22
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Coordinador" as Act
+boundary "IU_Dashboard" as B_Dash
+control "CTR_Reportes" as C_Rep
+entity "CE_Postulante" as E_Post
+entity "CE_NotaFinal" as E_Nota
+entity "CE_CupoGestion" as E_Cupo
+
+Act --> B_Dash : 1: + AbrirDashboard()
+B_Dash --> C_Rep : 2: + SolicitarEstadisticasTiempoReal()
+C_Rep --> E_Post : 3: + ObtenerDistribuciónInscritos()
+E_Post --> C_Rep : 4: + DistribucionInscritos
+C_Rep --> E_Nota : 5: + ObtenerRendimientoYTasasAprobacion()
+E_Nota --> C_Rep : 6: + RendimientoYTasas
+C_Rep --> E_Cupo : 7: + ObtenerLlenadoCuposCarrera()
+E_Cupo --> C_Rep : 8: + LlenadoCupos
+C_Rep --> B_Dash : 9: + EnviarDatosEstadisticos()
+B_Dash --> Act : 10: + RenderizarGraficosYTarjetasKPI()
+C_Rep --> B_Dash : 11: + TransmitirActualizacionesWebSocket(evento)
+@enduml
+```
+
+---
+
+## 5.3 Análisis de Clases 
+
+Las clases de análisis conceptuales del sistema se clasifican rigurosamente según la taxonomía de Jacobson en clases de interfaz (Boundary), control y entidad (Entity). Para reflejar la naturaleza incremental de la metodología PUDS, las clases se dividen y describen a continuación organizadas según su ciclo de desarrollo correspondiente:
+
+### 5.3.1 Clases de Análisis — CICLO 1 (Seguridad, Preinscripción y Asignación de Grupos)
+
+Este ciclo define el núcleo organizativo y la infraestructura lógica inicial de la plataforma, gobernando el control de acceso, el alta documental y financiera de postulantes, y el balanceo físico de grupos de estudio.
+
+#### A. Módulo de Autenticación y Autorización (RBAC)
+*   **`InterfazLogin` (Boundary):** Formulario web de captura del correo electrónico y contraseña del usuario final. Ejecuta validaciones de sintaxis y formato antes de enviar la petición de inicio de sesión.
+*   **`ControladorAcceso` (Control):** Coordina el flujo de seguridad del sistema. Valida credenciales contra persistencia, administra el ciclo de vida de las sesiones activas, genera los tokens JWT seguros y registra logs en la bitácora.
+*   **`Usuario` (Entity):** Representa las cuentas de acceso permitidas en el sistema. Almacena de forma persistente el nombre completo, el correo electrónico institucional, la contraseña encriptada por bcrypt, el rol jerárquico asignado y el estado activo.
+*   **`BitacoraAcceso` (Entity):** Almacena el historial inmutable de las operaciones sensibles de seguridad, guardando el identificador del usuario, la acción detallada (login exitoso, logout, intento fallido, cambio de credencial), la marca de tiempo UTC y la IP del dispositivo solicitante.
+
+#### B. Módulo de Registro y Gestión de Postulantes
+*   **`InterfazPreinscripcion` (Boundary):** Formulario dinámico estructurado para el ingreso de datos del postulante, carga de fotocopia del CI, certificado de nacimiento y título de bachiller digital, con visualización interactiva del checklist.
+*   **`InterfazPagoStripe` (Boundary):** Formulario integrado seguro de Stripe Checkout que captura la información monetaria y de tarjeta sin almacenarla en el servidor local.
+*   **`ControladorPreinscripcion` (Control):** Valida la consistencia de datos de registro, realiza la verificación síncrona contra bases de datos públicas (SEGIP/SEDUCA), gestiona el flujo del Webhook de Stripe y actualiza de forma atómica el estado del postulante.
+*   **`Postulante` (Entity):** Representa el expediente maestro del postulante. Almacena la Cédula de Identidad, nombres, apellidos, fecha de nacimiento, sexo, dirección, correo, colegio, turno de preferencia, carrera de 1ra y 2da opción, y estado académico (Preinscrito, Inscrito, En Evaluación, Aprobado, Reprobado, Pendiente Reasignación).
+*   **`RequisitoDigital` (Entity):** Almacena el cumplimiento del checklist documental (cédula digitalizada, certificado de nacimiento, título de bachiller legalizado y formulario de preinscripcion).
+*   **`Pago` (Entity):** Registra de manera inmutable cada pago verificado por el webhook de Stripe, enlazando el postulante, el identificador único de Stripe Checkout, el monto pagado, la fecha y hora, y el estado financiero de la transacción.
+
+#### C. Módulo de Asignación de Grupos y Docentes
+*   **`InterfazGrupos` (Boundary):** Vista del administrador que permite configurar las aulas y horarios de la facultad, visualizando la composición en tiempo real de cada aula asignada.
+*   **`ControladorPlanificacion` (Control):** Implementa el algoritmo de distribución de estudiantes. Lee a los postulantes inscritos, calcula el número de grupos por turno basándose en la cota de 70 personas `CEIL(N / 70)`, genera las asignaciones en round-robin y asocia los docentes a las materias verificando la disponibilidad horaria del docente (máximo 4 grupos).
+*   **`Grupo` (Entity):** Representa una sección de clases física o virtual. Almacena el número de grupo, gestión, turno y la relación con el aula.
+*   **`Aula` (Entity):** Almacena la infraestructura disponible para las clases del CUP, registrando el nombre del aula, capacidad máxima física y ubicación física.
+*   **`Docente` (Entity):** Contiene la información general de los docentes contratados (CI, nombres, apellidos, especialidad, grado académico y correo institucional).
+*   **`AsignacionGrupo` (Entity):** Entidad asociativa que vincula físicamente a cada postulante con su grupo de clase.
+
+#### Diagramas de Análisis de Clases por Caso de Uso (Ciclo 1)
+
+##### CU01: Iniciar Sesión en la Plataforma
+```plantuml
+@startuml CU01_Analisis
+allowmixing
+left to right direction
+skinparam classAttributeIconSize 0
+
+actor "USUARIO" as ActorUsuario
+
+class IU_Login <<Boundary>> {
+  +email
+  +password
+  --
+  +tomarDatos()
+  +validarFormulario()
+  +enviarSolicitudLogin()
+  +mostrarError(mensaje)
+  +mostrarHome()
+}
+
+class CTR_Auth <<Control>> {
+  --
+  +login(email, password)
+  +validarCredenciales()
+  +generarTokenJWT()
+  +registrarIngresoBitacora()
+}
+
+class CE_Usuario <<Entity>> {
+  +id_Usuario
+  +email
+  +password
+  +full_name
+  +is_active
+  +id_rol
+}
+
+class CE_BitacoraAcceso <<Entity>> {
+  +id_Bitacora
+  +id_Usuario
+  +accion
+  +fecha_hora
+  +ip
+}
+
+ActorUsuario - IU_Login
+IU_Login - CTR_Auth
+CTR_Auth - CE_Usuario
+CTR_Auth - CE_BitacoraAcceso
+@enduml
+```
+
+##### CU02: Cerrar Sesión Activa
+```plantuml
+@startuml CU02_Analisis
+allowmixing
+left to right direction
+skinparam classAttributeIconSize 0
+
+actor "USUARIO" as ActorUsuario
+
+class IU_Principal <<Boundary>> {
+  --
+  +solicitarCerrarSesion()
+  +mostrarPantallaLogin()
+}
+
+class CTR_Auth <<Control>> {
+  --
+  +invalidarSesion(token)
+  +registrarLogout()
+  +confirmarCierre()
+}
+
+class CE_BitacoraAcceso <<Entity>> {
+  +id_Bitacora
+  +id_Usuario
+  +accion
+  +fecha_hora
+  +ip
+}
+
+ActorUsuario - IU_Principal
+IU_Principal - CTR_Auth
+CTR_Auth - CE_BitacoraAcceso
+@enduml
+```
+
+##### CU03: Recuperar Contraseña por Correo Electrónico
+```plantuml
+@startuml CU03_Analisis
+allowmixing
+left to right direction
+skinparam classAttributeIconSize 0
+
+actor "USUARIO" as ActorUsuario
+
+class IU_Recuperacion <<Boundary>> {
+  +email
+  --
+  +tomarDatos()
+  +validarEmail()
+  +enviarSolicitudRecuperacion()
+  +mostrarMensajeExito()
+}
+
+class CTR_Auth <<Control>> {
+  --
+  +generarTokenRecuperacion(correo)
+  +validarExistenciaCorreo()
+  +enviarEmailRecuperacion()
+  +confirmarEnvio()
+}
+
+class CE_Usuario <<Entity>> {
+  +id_Usuario
+  +email
+  +password
+  +token_recuperacion
+}
+
+ActorUsuario - IU_Recuperacion
+IU_Recuperacion - CTR_Auth
+CTR_Auth - CE_Usuario
+@enduml
+```
+
+##### CU04: Gestionar Perfiles de Usuario (CRUD por Administrador)
+```plantuml
+@startuml CU04_Analisis
+allowmixing
+left to right direction
+skinparam classAttributeIconSize 0
+
+actor "ADMINISTRADOR" as ActorAdmin
+
+class IU_Usuarios <<Boundary>> {
+  +datosUsuario
+  --
+  +registrarNuevoUsuario(datos)
+  +mostrarListaUsuarios()
+  +actualizarListaUsuarios()
+  +mostrarMensajeExito()
+}
+
+class CTR_Usuarios <<Control>> {
+  --
+  +crearUsuario(datos)
+  +validarNoDuplicado(correo)
+  +guardarNuevoUsuario()
+  +registrarAccionAdmin()
+}
+
+class CE_Usuario <<Entity>> {
+  +id_Usuario
+  +email
+  +password
+  +full_name
+  +is_active
+  +id_rol
+}
+
+class CE_BitacoraAcceso <<Entity>> {
+  +id_Bitacora
+  +id_Usuario
+  +accion
+  +fecha_hora
+}
+
+ActorAdmin - IU_Usuarios
+IU_Usuarios - CTR_Usuarios
+CTR_Usuarios - CE_Usuario
+CTR_Usuarios - CE_BitacoraAcceso
+@enduml
+```
+
+##### CU05: Registrar Postulante Nuevo
+```plantuml
+@startuml CU05_Analisis
+allowmixing
+left to right direction
+skinparam classAttributeIconSize 0
+
+actor "POSTULANTE" as ActorPostulante
+
+class IU_Preinscripcion <<Boundary>> {
+  +datosPersonales
+  +documentos
+  --
+  +completarFormularioRegistro(datos)
+  +cargarDocumentos()
+  +enviarFormulario()
+  +mostrarPasosSiguientes()
+}
+
+class CTR_Preinscripcion <<Control>> {
+  --
+  +procesarRegistro(datos)
+  +crearPerfilPostulante()
+  +guardarPreferenciasCarrera()
+  +retornarPostulanteCreado()
+}
+
+class CE_Postulante <<Entity>> {
+  +id_Postulante
+  +ci
+  +nombres
+  +apellidos
+  +carrera_1ra_opcion
+  +carrera_2da_opcion
+  +estado
+}
+
+class CE_RequisitoDigital <<Entity>> {
+  +id_Requisito
+  +id_Postulante
+  +tipo_documento
+  +ruta_archivo
+}
+
+ActorPostulante - IU_Preinscripcion
+IU_Preinscripcion - CTR_Preinscripcion
+CTR_Preinscripcion - CE_Postulante
+CTR_Preinscripcion - CE_RequisitoDigital
+@enduml
+```
+
+##### CU06: Verificar Requisitos Automáticamente
+```plantuml
+@startuml CU06_Analisis
+allowmixing
+left to right direction
+skinparam classAttributeIconSize 0
+
+actor "SISTEMA" as ActorSistema
+
+class IU_Preinscripcion <<Boundary>> {
+  --
+  +iniciarVerificacionAutomatica()
+  +mostrarEstadoVerificado()
+}
+
+class CTR_Preinscripcion <<Control>> {
+  --
+  +verificarIdentidad(ci, fecha_nac)
+  +consultarAPISegip(ci)
+  +consultarAPISeduca(ci)
+  +actualizarEstado(Verificado)
+}
+
+class CE_Postulante <<Entity>> {
+  +id_Postulante
+  +ci
+  +estado_requisitos
+}
+
+ActorSistema - IU_Preinscripcion
+IU_Preinscripcion - CTR_Preinscripcion
+CTR_Preinscripcion - CE_Postulante
+@enduml
+```
+
+##### CU07: Procesar Pago de Matrícula (Pasarela Stripe)
+```plantuml
+@startuml CU07_Analisis
+allowmixing
+left to right direction
+skinparam classAttributeIconSize 0
+
+actor "POSTULANTE" as ActorPostulante
+
+class IU_Inscripcion <<Boundary>> {
+  --
+  +solicitarPagoMatricula()
+  +mostrarFormularioPagoStripe()
+}
+
+class CTR_Inscripcion <<Control>> {
+  --
+  +iniciarProcesoPago(postulanteId)
+  +crearSesionPago(monto)
+  +notificarPagoExitoso(webhook)
+  +crearRegistroPago()
+  +actualizarEstado(Inscrito)
+}
+
+class CE_Pago <<Entity>> {
+  +id_Pago
+  +id_Postulante
+  +monto
+  +transaccionId
+  +estado_transaccion
+}
+
+class CE_Postulante <<Entity>> {
+  +id_Postulante
+  +estado
+}
+
+ActorPostulante - IU_Inscripcion
+IU_Inscripcion - CTR_Inscripcion
+CTR_Inscripcion - CE_Pago
+CTR_Inscripcion - CE_Postulante
+@enduml
+```
+
+##### CU08: Detectar Postulante Recurrente por CI
+```plantuml
+@startuml CU08_Analisis
+allowmixing
+left to right direction
+skinparam classAttributeIconSize 0
+
+actor "POSTULANTE" as ActorPostulante
+
+class IU_Preinscripcion <<Boundary>> {
+  +ci
+  --
+  +ingresarCI()
+  +mostrarAlertaRecurrente()
+}
+
+class CTR_Preinscripcion <<Control>> {
+  --
+  +verificarPostulanteExistente(ci)
+  +buscarRegistroAnterior(ci)
+  +retornarEstadoDuplicado()
+}
+
+class CE_Postulante <<Entity>> {
+  +id_Postulante
+  +ci
+  +historial_intentos
+}
+
+ActorPostulante - IU_Preinscripcion
+IU_Preinscripcion - CTR_Preinscripcion
+CTR_Preinscripcion - CE_Postulante
+@enduml
+```
+
+##### CU09: Buscar y Consultar Postulantes (Filtros Avanzados)
+```plantuml
+@startuml CU09_Analisis
+allowmixing
+left to right direction
+skinparam classAttributeIconSize 0
+
+actor "ADMINISTRADOR" as ActorAdmin
+
+class IU_Busqueda <<Boundary>> {
+  +parametrosFiltro
+  --
+  +ingresarFiltros(criterio)
+  +renderizarGrillaResultados()
+}
+
+class CTR_Busqueda <<Control>> {
+  --
+  +buscarPostulantes(criterio)
+  +ejecutarConsulta(criterio)
+  +retornarResultados(lista)
+}
+
+class CE_Postulante <<Entity>> {
+  +id_Postulante
+  +ci
+  +nombres
+  +estado
+}
+
+ActorAdmin - IU_Busqueda
+IU_Busqueda - CTR_Busqueda
+CTR_Busqueda - CE_Postulante
+@enduml
+```
+
+##### CU10: Calcular y Crear Grupos Automáticamente
+```plantuml
+@startuml CU10_Analisis
+allowmixing
+left to right direction
+skinparam classAttributeIconSize 0
+
+actor "ADMINISTRADOR" as ActorAdmin
+
+class IU_Grupos <<Boundary>> {
+  --
+  +ejecutarCalculoAsignacion()
+  +mostrarGruposConPostulantes()
+}
+
+class CTR_Planificacion <<Control>> {
+  --
+  +iniciarAsignacionMasiva()
+  +obtenerPostulantesInscritosSinGrupo()
+  +calcularGruposNecesarios()
+  +crearNuevosGrupos()
+  +calcularDistribucionEquitativa()
+  +vincularPostulanteAGrupo()
+}
+
+class CE_Postulante <<Entity>> {
+  +id_Postulante
+  +estado
+}
+
+class CE_Grupo <<Entity>> {
+  +id_Grupo
+  +turno
+  +id_Aula
+}
+
+class CE_Aula <<Entity>> {
+  +id_Aula
+  +capacidad
+}
+
+class CE_AsignacionGrupo <<Entity>> {
+  +id_Asignacion
+  +id_Postulante
+  +id_Grupo
+}
+
+ActorAdmin - IU_Grupos
+IU_Grupos - CTR_Planificacion
+CTR_Planificacion - CE_Postulante
+CTR_Planificacion - CE_Grupo
+CTR_Planificacion - CE_Aula
+CTR_Planificacion - CE_AsignacionGrupo
+@enduml
+```
+
+##### CU11: Asignar Postulantes a Grupos
+```plantuml
+@startuml CU11_Analisis
+allowmixing
+left to right direction
+skinparam classAttributeIconSize 0
+
+actor "ADMINISTRADOR" as ActorAdmin
+
+class IU_Grupos <<Boundary>> {
+  --
+  +solicitarAjusteGrupo(postulanteId, nuevoGrupoId)
+  +actualizarListaGrupo()
+}
+
+class CTR_Planificacion <<Control>> {
+  --
+  +reasignarPostulante(postulanteId, nuevoGrupoId)
+  +verificarCapacidad(nuevoGrupoId)
+  +actualizarVinculoGrupo()
+}
+
+class CE_Postulante <<Entity>> {
+  +id_Postulante
+}
+
+class CE_Grupo <<Entity>> {
+  +id_Grupo
+  +cupos_disponibles
+}
+
+class CE_AsignacionGrupo <<Entity>> {
+  +id_Asignacion
+  +id_Postulante
+  +id_Grupo
+}
+
+ActorAdmin - IU_Grupos
+IU_Grupos - CTR_Planificacion
+CTR_Planificacion - CE_Postulante
+CTR_Planificacion - CE_Grupo
+CTR_Planificacion - CE_AsignacionGrupo
+@enduml
+```
+
+##### CU12: Asignar Docente a Grupo y Materia
+```plantuml
+@startuml CU12_Analisis
+allowmixing
+left to right direction
+skinparam classAttributeIconSize 0
+
+actor "ADMINISTRADOR" as ActorAdmin
+
+class IU_Docentes <<Boundary>> {
+  +docenteId
+  +grupoId
+  +materiaId
+  --
+  +asignarDocente(docenteId, grupoId, materiaId)
+  +actualizarMatrizDocente()
+}
+
+class CTR_Planificacion <<Control>> {
+  --
+  +vincularDocenteMateria(docenteId, grupoId, materiaId)
+  +verificarCargaHoraria(docenteId)
+  +validarEspecialidad(docenteId, materiaId)
+  +registrarAsignacionMateria()
+}
+
+class CE_Docente <<Entity>> {
+  +id_Docente
+  +carga_horaria
+  +especialidad
+}
+
+class CE_Grupo <<Entity>> {
+  +id_Grupo
+}
+
+class CE_Materia <<Entity>> {
+  +id_Materia
+  +nombre
+}
+
+ActorAdmin - IU_Docentes
+IU_Docentes - CTR_Planificacion
+CTR_Planificacion - CE_Docente
+CTR_Planificacion - CE_Grupo
+CTR_Planificacion - CE_Materia
+@enduml
+```
+
+##### CU23: Realizar Simulacro de Examen (Práctica)
+```plantuml
+@startuml CU23_Analisis
+allowmixing
+left to right direction
+skinparam classAttributeIconSize 0
+
+actor "POSTULANTE" as ActorPostulante
+
+class IU_Simulacro <<Boundary>> {
+  +respuestas
+  --
+  +iniciarSimulacro()
+  +mostrarTemporizadorYPreguntas()
+  +enviarRespuestas(respuestas)
+  +mostrarResultadosSimulacro()
+}
+
+class CTR_Simulacro <<Control>> {
+  --
+  +generarPreguntasSimulacro()
+  +obtenerBancoPreguntas()
+  +calificarSimulacro(respuestas)
+  +retornarNotaSimulacro()
+}
+
+class CE_PreguntaSimulacro <<Entity>> {
+  +id_Pregunta
+  +enunciado
+  +opciones
+  +respuesta_correcta
+}
+
+ActorPostulante - IU_Simulacro
+IU_Simulacro - CTR_Simulacro
+CTR_Simulacro - CE_PreguntaSimulacro
+@enduml
+```
+
+
+---
+
+### 5.3.2 Clases de Análisis — CICLO 2 (Evaluación, Admisión y Reportes con IA)
+
+Este ciclo madura e integra la lógica de negocio sustantiva de la facultad, implementando el registro de notas, el algoritmo meritocrático de plazas y la visualización analítica interactiva para directores y coordinadores.
+
+#### A. Módulo Académico y Evaluación
+*   **`InterfazNotas` (Boundary):** Grilla interactiva editable para la carga manual de calificaciones por materia, y formulario de arrastre (drag-and-drop) para la carga masiva de archivos CSV del laboratorio.
+*   **`ControladorEvaluacion` (Control):** Valida que las calificaciones ingresadas se encuentren en el rango real 0-100, procesa el CSV extrayendo la planilla masiva, calcula el promedio ponderado condicional (30% Ex1 + 30% Ex2 + 40% Ex3) y determina el estado aprobatorio final de forma individual por materia.
+*   **`Examen` (Entity):** Representa una prueba académica rendida. Almacena la nota decimal de la prueba, la materia asociada, el número correlativo de examen (1, 2 o 3) y la referencia al postulante evaluado.
+*   **`Materia` (Entity):** Representa el catálogo oficial de las materias impartidas en el CUP (Computación, Matemáticas, Inglés y Física).
+*   **`NotaFinal` (Entity):** Consolidado final del estudiante por materia. Almacena el promedio ponderado calculado y el estado (APROBADO o REPROBADO).
+
+#### B. Módulo de Admisión y Asignación de Carreras
+*   **`InterfazAdmision` (Boundary):** Formulario para la apertura de nuevas gestiones académicas y definición del número de plazas/cupos autorizados por carrera.
+*   **`ControladorAsignacionCarrera` (Control):** Ejecuta el algoritmo secuencial masivo de asignación de vacantes. Ordena de forma meritocrática (promedio general descendente), verifica la disponibilidad en `CupoGestion` de la primera opción y de forma alterna la segunda opción, y actualiza de manera transaccional y aislada la tabla de admisiones.
+*   **`Carrera` (Entity):** Catálogo maestro de las cuatro carreras de la facultad (Ingeniería Informática, Ingeniería de Sistemas, Ingeniería de Redes y Telecomunicaciones, e Ingeniería en Robótica).
+*   **`CupoGestion` (Entity):** Representa el límite máximo de admisión por carrera en una gestión específica. Almacena el cupo máximo total y los cupos disponibles que decrementa el algoritmo.
+*   **`Admision` (Entity):** Registro oficial de la admisión final. Almacena la carrera asignada, el postulante, la vía de asignación (1ra Opción, 2da Opción, Reasignación administrativa) y la fecha.
+
+#### C. Módulo de Reportes e Inteligencia Analítica (Dashboard)
+*   **`InterfazReportes` (Boundary):** Panel con catálogo de reportes predefinidos estructurados, controles dinámicos intermedios de filtrado y el botón interactivo de micrófono para consultas de voz.
+*   **`InterfazDashboard` (Boundary):** Tablero visual de indicadores clave (KPIs) y gráficos estadísticos interactivos (Chart.js) que se actualizan de forma instantánea a través de WebSockets sin refrescar pantalla.
+*   **`ControladorReportes` (Control):** Orquesta la extracción de datos consolidada, procesa las peticiones de voz con IA (NLP), y gestiona el flujo de transmisión en tiempo real de WebSockets para el dashboard.
+*   **`AsistenteVoz` (Boundary/Control):** Interfaz Web Speech API para capturar entrada de audio y coordinar su procesamiento semántico de lenguaje natural.
+*   **`AsistenteChatbot` (Boundary/Control):** Widget de chat flotante en el frontend conectado con la API de OpenAI que procesa preguntas de postulantes relativas a requisitos, fechas, estado y notas, traduciéndolas a consultas a la base de datos local de forma segura.
+
+
+
+### 5.4. Dependencias de Paquetes Arquitectónicos
+
+El análisis de la arquitectura requiere modelar el flujo de dependencias entre los paquetes para garantizar una estructura de capas limpia y libre de dependencias circulares. A continuación, se detallan las relaciones de dependencia lógica para cada ciclo de construcción:
+
+#### A. Dependencias de Paquetes Arquitectónicos — CICLO 1
+
+**Descripción del diagrama:** Esquematiza las dependencias lógicas direccionadas en la primera iteración de desarrollo. Se observa un acoplamiento unidireccional estricto hacia el paquete transversal de seguridad y la estructura de preinscripción de datos.
+
+```plantuml
+@startuml Paquetes_Dependencias_Ciclo1
+skinparam packageStyle folder
+skinparam backgroundColor transparent
+
+package "Paquete_Autenticacion" as P_Auth
+package "Paquete_Registro_Postulantes" as P_Post
+package "Paquete_Planificacion_Academica" as P_Plan
+
+' Relaciones de Dependencia
+P_Post ..> P_Auth : <<import>> (depende de seguridad)
+P_Plan ..> P_Post : <<access>> (lee inscritos validados)
+@enduml
+```
+
+*   **`Paquete_Registro_Postulantes` depends on `Paquete_Autenticacion`:** El registro de postulantes y la consulta de expedientes importan y dependen de los servicios transversales de seguridad para autorizar y tokenizar a los usuarios antes de permitir cualquier operación de lectura o escritura en las boundaries de inscripción.
+*   **`Paquete_Planificacion_Academica` depends on `Paquete_Registro_Postulantes`:** El algoritmo de asignación de grupos accede y lee a los postulantes del paquete de registro que ya se encuentran en estado formal de "Inscrito", precondición necesaria antes de poder ejecutar el agrupamiento físico.
+
+#### B. Dependencias de Paquetes Arquitectónicos — CICLO 2
+
+**Descripción del diagrama:** Muestra la topología completa de dependencias de la arquitectura al finalizar la segunda iteración. Los paquetes nuevos del Ciclo 2 se acoplan de forma ordenada a las bases del Ciclo 1, manteniendo el principio de **baja dependencia y extensibilidad lógica**.
+
+```plantuml
+@startuml Paquetes_Dependencias_Ciclo2
+skinparam packageStyle folder
+skinparam backgroundColor transparent
+
+package "Paquete_Autenticacion" as P_Auth <<existente>>
+package "Paquete_Registro_Postulantes" as P_Post <<existente>>
+package "Paquete_Planificacion_Academica" as P_Plan <<existente>>
+package "Paquete_Evaluacion" as P_Eval <<nuevo>>
+package "Paquete_Admision_Carreras" as P_Admi <<nuevo>>
+package "Paquete_Reportes_IA" as P_Rep <<nuevo>>
+
+' Dependencias del Ciclo 2 hacia el Ciclo 1 y entre sí
+P_Eval ..> P_Auth : <<use>> (autenticacion y roles)
+P_Eval ..> P_Plan : <<use>> (lee estudiantes asignados a grupos)
+P_Eval ..> P_Post : <<use>> (valida existencia de postulante por CI)
+P_Admi ..> P_Auth : <<use>> (autenticacion y roles)
+P_Admi ..> P_Eval : <<use>> (consume notas finales aprobadas)
+P_Admi ..> P_Post : <<use>> (lee postulantes aprobados y actualiza estado)
+P_Rep ..> P_Auth : <<use>> (autenticacion y roles)
+P_Rep ..> P_Post : <<use>> (genera estadisticas de inscritos)
+P_Rep ..> P_Eval : <<use>> (analiza rendimiento académico)
+P_Rep ..> P_Admi : <<use>> (analiza indices de admision final)
+@enduml
+```
+
+*   **`Paquete_Evaluacion`** depende de `Paquete_Autenticacion` (para autenticar al Administrador que carga/registra notas), de `Paquete_Planificacion_Academica` (para leer la nómina de estudiantes asignados por grupos, requerimiento indispensable para estructurar la planilla de notas) y de `Paquete_Registro_Postulantes` (para buscar y validar la existencia y datos básicos del estudiante mediante su CI durante el registro/carga de notas).
+*   **`Paquete_Admision_Carreras`** depende de `Paquete_Autenticacion` (seguridad de perfiles de la facultad), de `Paquete_Evaluacion` (ya que el algoritmo de asignación secuencial consume los promedios ponderados finales y el estado de aprobación calculado dinámicamente) y de `Paquete_Registro_Postulantes` (para leer la lista de aprobados por mérito y actualizar de forma transaccional el estado del postulante, ej: a pendiente de reasignación en caso de cupos llenos).
+*   **`Paquete_Reportes_IA`** actúa como consumidor global de datos analíticos. Depende de `Paquete_Autenticacion` (seguridad en endpoints de reportes), de `Paquete_Registro_Postulantes` (para graficar índices de preinscripción y demanda), de `Paquete_Evaluacion` (para analizar el promedio por materias y tasas de aprobación) y de `Paquete_Admision_Carreras` (para monitorear el llenado de cupos por especialidad en la facultad).
 
 ---
 
@@ -2180,7 +3785,7 @@ El Flujo de Trabajo de Diseño traduce el modelo conceptual de análisis en una 
 
 ## 6.1 Diseño de la Arquitectura (Lógica y Física)
 
-### Arquitectura Lógica
+### Arquitectura Fisico
 El sistema adopta el patrón arquitectónico **Model-View-Controller (MVC)** combinado con un enfoque de **Single Page Application (SPA)** mediante la integración de **Inertia.js**. Inertia elimina la necesidad de crear APIs REST complejas para la vista principal, permitiendo renderizar componentes React directamente desde los controladores de Laravel como si fueran vistas blade tradicionales, manteniendo la persistencia de estado reactivo y transiciones instantáneas sin refresco de página.
 
 *   **Presentación (Frontend SPA):** React 18, TailwindCSS y bibliotecas de UI de alta calidad.
@@ -2229,181 +3834,1211 @@ LaravelApp -- OpenAICloud : HTTPS (REST Chat Completion)
 SpeechApp -- OpenAICloud : HTTPS (Speech to Text)
 @enduml
 ```
+### a) Diseño de la Arquitectura logica
 
----
+```plantuml
+@startuml ArquitecturaLogica
+skinparam packageStyle folder
+skinparam shadowing false
+skinparam BackgroundColor transparent
+skinparam ArrowColor #2D3748
+skinparam noteBackgroundColor #EDF2F7
+skinparam noteBorderColor #CBD5E0
 
-## 6.2 Diseño de Casos de Uso (Diagramas de Secuencia)
+together {
+  package "Paquete_Reportes_IA" as L1B1
+  package "Paquete_Admision_Carreras" as L1B2
+  package "Paquete_Evaluacion" as L1B3
+  note "Capa especifica\nde la aplicación" as N1
+  L1B1 -[hidden]right-> L1B2
+  L1B2 -[hidden]right-> L1B3
+  L1B3 -[hidden]right-> N1
+}
 
-Los diagramas de secuencia detallan paso a paso el paso de mensajes y llamadas a métodos entre los componentes reales del software.
+together {
+  package "Paquete_Planificacion_Academica" as L2B1
+  package "Paquete_Registro_Postulantes" as L2B2
+  package "Paquete_Autenticacion" as L2B3
+  note "Capa general de la\naplicación" as N2
+  L2B1 -[hidden]right-> L2B2
+  L2B2 -[hidden]right-> L2B3
+  L2B3 -[hidden]right-> N2
+}
 
-### 1. Diagrama de Secuencia para CU07: Procesar Pago de Matrícula (Integración Stripe)
+together {
+  package "Eloquent ORM\n(Persistencia)" as L3B1
+  package "Integraciones y APIs\n(Stripe/SEGIP/OpenAI)" as L3B2
+  note "Capa\nintermedia" as N3
+  L3B1 -[hidden]right-> L3B2
+  L3B2 -[hidden]right-> N3
+}
 
-Muestra la creación del checkout y la confirmación asíncrona mediante el webhook oficial del servidor de Stripe.
+together {
+  package "Motor de Base de Datos\n(PostgreSQL 18)" as L4B1
+  package "Entorno Laravel 11\n& PHP 8.4 Runtime" as L4B2
+  note "Capa de software\ndel sistema" as N4
+  L4B1 -[hidden]right-> L4B2
+  L4B2 -[hidden]right-> N4
+}
+
+L1B1 ..> L2B1
+L1B1 ..> L2B2
+L1B2 ..> L2B2
+L1B3 ..> L2B3
+
+L2B1 ..> L3B1
+L2B2 ..> L3B1
+L2B2 ..> L3B2
+L2B3 ..> L3B1
+L2B3 ..> L4B2
+
+L3B1 ..> L4B1
+L3B1 ..> L4B2
+L3B2 ..> L4B2
+@enduml
+```
+
+#### 1. Diagrama de Secuencia para CU01: Iniciar Sesión (Autenticación y RBAC)
+
+**Descripción detallada y dinámica del flujo de diseño:**
+El flujo de interacción secuencial ilustra el protocolo de autenticación seguro modelado en base a componentes BCE:
+1. El *Usuario* ingresa sus credenciales en la interfaz de login `IU_Login`.
+2. La interfaz frontera delega la solicitud de inicio de sesión llamando al controlador de negocio `CTR_Auth`.
+3. El controlador consulta a la entidad `CE_Usuario` para recuperar el registro coincidente con el email.
+4. La entidad devuelve los metadatos y el hash de la contraseña almacenada.
+5. **[ALT]** El controlador verifica la autenticidad de las credenciales:
+   - **Credenciales válidas:** El controlador registra el log de auditoría en `CE_BitacoraAcceso`, confirma y redirige al Home.
+   - **Credenciales inválidas:** El controlador incrementa el contador de intentos fallidos y notifica el error a la interfaz.
+6. La frontera muestra el home correspondiente al rol del usuario o el mensaje de error según el resultado.
+
+```plantuml
+@startuml Seq_CU01
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Usuario" as Act
+participant "IU_Login" as UI <<Form>>
+participant "CTR_Auth" as Ctrl <<ctr>>
+participant "CE_Usuario" as E_Usu <<BD>>
+participant "CE_BitacoraAcceso" as E_Bit <<BD>>
+
+Act -> UI : 1: Ingresar email y password
+activate UI
+UI -> Ctrl : 2: login(email, password)
+activate Ctrl
+Ctrl -> E_Usu : 3: select_where(email)
+activate E_Usu
+E_Usu --> Ctrl : 4: Datos y Hash
+deactivate E_Usu
+alt Credenciales válidas
+  Ctrl -> E_Bit : 5: RegistrarLoginExitoso()
+  activate E_Bit
+  E_Bit --> Ctrl : Confirmación
+  deactivate E_Bit
+  Ctrl --> UI : 6: Redirigir a Home
+  deactivate Ctrl
+  UI --> Act : 7: MostrarHome()
+else Credenciales inválidas
+  Ctrl -> E_Usu : 5: IncrementarIntentosFallidos()
+  activate E_Usu
+  E_Usu --> Ctrl : Confirmación
+  deactivate E_Usu
+  Ctrl --> UI : 6: NotificarError("Credenciales incorrectas")
+  deactivate Ctrl
+  UI --> Act : 7: MostrarMensajeError()
+end
+deactivate UI
+@enduml
+```
+
+#### 2. Diagrama de Secuencia para CU02: Cerrar Sesión
+
+**Descripción detallada y dinámica del flujo de diseño:**
+1. El *Usuario* solicita cerrar su sesión desde la interfaz principal.
+2. La frontera delega la invalidación de credenciales al controlador de autenticación `CTR_Auth`.
+3. El controlador anota de forma inmutable la salida y desconexión en la entidad `CE_BitacoraAcceso`.
+4. El controlador confirma la invalidación y ordena el cierre.
+5. La interfaz destruye los tokens y redirige al usuario a la pantalla de login.
+
+```plantuml
+@startuml Seq_CU02
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Usuario" as Act
+participant "IU_Principal" as UI <<Form>>
+participant "CTR_Auth" as Ctrl <<ctr>>
+participant "CE_BitacoraAcceso" as E_Bit <<BD>>
+
+Act -> UI : 1: SolicitarCerrarSesion()
+activate UI
+UI -> Ctrl : 2: InvalidarSesion(token)
+activate Ctrl
+Ctrl -> E_Bit : 3: RegistrarLogout()
+activate E_Bit
+E_Bit --> Ctrl : Confirmación
+deactivate E_Bit
+Ctrl -> UI : 4: ConfirmarCierre()
+deactivate Ctrl
+UI --> Act : 5: MostrarPantallaLogin()
+deactivate UI
+@enduml
+```
+
+#### 3. Diagrama de Secuencia para CU03: Recuperar Contraseña
+
+**Descripción detallada y dinámica del flujo de diseño:**
+1. El *Usuario* ingresa su correo electrónico para solicitar un restablecimiento.
+2. La frontera delega la solicitud de recuperación al controlador de autenticación `CTR_Auth`.
+3. El controlador consulta a `CE_Usuario` para validar la existencia del correo.
+4. La entidad devuelve la información de coincidencia.
+5. **[ALT]** El controlador evalúa el resultado de la validación:
+   - **Correo registrado:** El controlador genera el token de recuperación, ejecuta el envío de correo y confirma a la interfaz.
+   - **Correo no registrado:** El controlador retorna un mensaje genérico por seguridad sin revelar si el correo existe.
+6. La interfaz muestra el mensaje correspondiente en la pantalla.
+
+```plantuml
+@startuml Seq_CU03
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Usuario" as Act
+participant "IU_Recuperacion" as UI <<Form>>
+participant "CTR_Auth" as Ctrl <<ctr>>
+participant "CE_Usuario" as E_Usu <<BD>>
+
+Act -> UI : 1: IngresarCorreo(correo)
+activate UI
+UI -> Ctrl : 2: GenerarTokenRecuperacion(correo)
+activate Ctrl
+Ctrl -> E_Usu : 3: ValidarExistenciaCorreo(correo)
+activate E_Usu
+E_Usu --> Ctrl : 4: DatosExistencia
+deactivate E_Usu
+alt Correo registrado en el sistema
+  Ctrl -> Ctrl : 5: GenerarTokenYEnviarEmail()
+  Ctrl --> UI : 6: ConfirmarEnvio()
+  deactivate Ctrl
+  UI --> Act : 7: MostrarMensajeExito()
+else Correo no registrado
+  Ctrl --> UI : 5: MostrarMensajeGenerico()
+  deactivate Ctrl
+  UI --> Act : 6: MostrarMensaje("Si el correo existe, recibirá un enlace")
+end
+deactivate UI
+@enduml
+```
+
+#### 4. Diagrama de Secuencia para CU04: Gestionar Perfiles de Usuario
+
+**Descripción detallada y dinámica del flujo de diseño:**
+1. El *Administrador* ingresa los datos del nuevo perfil de usuario en la interfaz.
+2. La frontera delega la creación del usuario al controlador de perfiles `CTR_Usuarios`.
+3. El controlador valida con la entidad `CE_Usuario` que no existan correos duplicados.
+4. La entidad confirma la validez de la validación.
+5. **[ALT]** El controlador evalúa el resultado de la validación de duplicados:
+   - **Correo no duplicado:** El controlador persiste el nuevo usuario, registra la acción en auditoría y retorna éxito.
+   - **Correo duplicado:** El controlador rechaza la operación y notifica al administrador que el correo ya existe.
+6. La interfaz actualiza la grilla de usuarios o muestra el error correspondiente.
+
+```plantuml
+@startuml Seq_CU04
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Administrador" as Act
+participant "IU_Usuarios" as UI <<Form>>
+participant "CTR_Usuarios" as Ctrl <<ctr>>
+participant "CE_Usuario" as E_Usu <<BD>>
+participant "CE_BitacoraAcceso" as E_Bit <<BD>>
+
+Act -> UI : 1: RegistrarNuevoUsuario(datos)
+activate UI
+UI -> Ctrl : 2: CrearUsuario(datos)
+activate Ctrl
+Ctrl -> E_Usu : 3: ValidarNoDuplicado(correo)
+activate E_Usu
+E_Usu --> Ctrl : 4: ResultadoValidacion
+deactivate E_Usu
+alt Correo no duplicado
+  Ctrl -> E_Usu : 5: GuardarNuevoUsuario()
+  activate E_Usu
+  E_Usu --> Ctrl : Confirmación
+  deactivate E_Usu
+  Ctrl -> E_Bit : 6: RegistrarAccionAdmin()
+  activate E_Bit
+  E_Bit --> Ctrl : Confirmación
+  deactivate E_Bit
+  Ctrl --> UI : 7: RetornarExito()
+  deactivate Ctrl
+  UI --> Act : 8: ActualizarListaUsuarios()
+else Correo duplicado detectado
+  Ctrl --> UI : 5: NotificarErrorDuplicado("El correo ya existe")
+  deactivate Ctrl
+  UI --> Act : 6: MostrarMensajeError()
+end
+deactivate UI
+@enduml
+```
+
+#### 5. Diagrama de Secuencia para CU05: Registrar Postulante Nuevo
+
+**Descripción detallada y dinámica del flujo de diseño:**
+1. El *Postulante* completa los campos biográficos y de carrera en el formulario de inscripción `IU_Preinscripcion`.
+2. La frontera delega la lógica de registro al controlador `CTR_Preinscripcion`.
+3. El controlador orquesta la creación del expediente en la entidad `CE_Postulante`.
+4. El controlador guarda las preferencias de turnos y carrera del estudiante.
+5. El controlador retorna la estructura con el código único de preinscripción.
+6. La interfaz renderiza las pantallas de validaciones documentales automáticas.
+
+```plantuml
+@startuml Seq_CU05
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Postulante" as Act
+participant "IU_Preinscripcion" as UI <<Form>>
+participant "CTR_Preinscripcion" as Ctrl <<ctr>>
+participant "CE_Postulante" as E_Post <<BD>>
+
+Act -> UI : 1: CompletarFormularioRegistro(datos)
+activate UI
+UI -> Ctrl : 2: ProcesarRegistro(datos)
+activate Ctrl
+Ctrl -> E_Post : 3: CrearPerfilPostulante()
+activate E_Post
+E_Post --> Ctrl : Confirmación
+deactivate E_Post
+Ctrl -> E_Post : 4: GuardarPreferenciasCarrera()
+activate E_Post
+E_Post --> Ctrl : Confirmación
+deactivate E_Post
+Ctrl --> UI : 5: RetornarPostulanteCreado()
+deactivate Ctrl
+UI --> Act : 6: MostrarPasosSiguientes()
+deactivate UI
+@enduml
+```
+
+#### 6. Diagrama de Secuencia para CU06: Verificar Requisitos Automáticamente (SEGIP/SEDUCA)
+
+**Descripción detallada y dinámica del flujo de diseño:**
+1. El *Sistema* dispara automáticamente la verificación a través de la `IU_Preinscripcion`.
+2. La frontera delega la solicitud al `CTR_Preinscripcion` llamando a `VerificarIdentidad(ci, fecha_nac)`.
+3. El controlador se comunica con el límite externo `API SEGIP` para validar la identidad física.
+4. El SEGIP retorna la confirmación o rechazo de los datos biométricos.
+5. **[ALT]** El controlador evalúa el resultado de la verificación SEGIP:
+   - **Identidad verificada:** El controlador continúa consultando a `API SEDUCA` para validar el título de bachiller. Si SEDUCA confirma, se actualiza el estado del postulante a "Verificado".
+   - **Identidad no verificada (SEGIP o SEDUCA):** El controlador rechaza la verificación y notifica el error a la interfaz, indicando qué servicio falló.
+6. La frontera notifica al sistema o usuario el resultado del proceso documental.
+
+```plantuml
+@startuml Seq_CU06
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Sistema" as Act
+participant "IU_Preinscripcion" as UI <<Form>>
+participant "CTR_Preinscripcion" as Ctrl <<ctr>>
+participant "API SEGIP" as B_SEGIP <<Form>>
+participant "API SEDUCA" as B_SEDUCA <<Form>>
+participant "CE_Postulante" as E_Post <<BD>>
+
+Act -> UI : 1: IniciarVerificacionAutomatica()
+activate UI
+UI -> Ctrl : 2: VerificarIdentidad(ci, fecha_nac)
+activate Ctrl
+Ctrl -> B_SEGIP : 3: ConsultarIdentidad(ci)
+activate B_SEGIP
+B_SEGIP --> Ctrl : 4: ResultadoVerificacion
+deactivate B_SEGIP
+alt Identidad verificada por SEGIP
+  Ctrl -> B_SEDUCA : 5: ConsultarBachiller(ci)
+  activate B_SEDUCA
+  B_SEDUCA --> Ctrl : 6: ResultadoBachiller
+  deactivate B_SEDUCA
+  alt Bachiller confirmado por SEDUCA
+    Ctrl -> E_Post : 7: ActualizarEstado(Verificado)
+    activate E_Post
+    E_Post --> Ctrl : Confirmación
+    deactivate E_Post
+    Ctrl --> UI : 8: ConfirmarVerificacion()
+    deactivate Ctrl
+    UI --> Act : 9: NotificarVerificacionCompleta()
+  else Bachiller no encontrado en SEDUCA
+    Ctrl --> UI : 7: NotificarErrorVerificacion("Título no verificado en SEDUCA")
+    deactivate Ctrl
+    UI --> Act : 8: MostrarErrorVerificacion()
+  end
+else Identidad no verificada por SEGIP
+  Ctrl --> UI : 5: NotificarErrorVerificacion("Identidad no verificada en SEGIP")
+  deactivate Ctrl
+  UI --> Act : 6: MostrarErrorVerificacion()
+end
+deactivate UI
+@enduml
+```
+
+#### 7. Diagrama de Secuencia para CU07: Procesar Pago de Matrícula (Stripe)
+
+**Descripción detallada y dinámica del flujo de diseño:**
+1. El *Postulante* solicita el pago de su matrícula desde la interfaz de usuario `IU_Inscripcion`.
+2. La frontera delega la solicitud al `CTR_Inscripcion` llamando a `IniciarProcesoPago(postulanteId)`.
+3. El controlador se comunica con el límite externo `PasarelaStripe` para inicializar una sesión de pago segura.
+4. El controlador recibe la URL de redirección y la entrega a la interfaz.
+5. El controlador ordena redirigir al postulante a la pasarela externa.
+6. La frontera renderiza la pantalla de pago externa de Stripe.
+7. El postulante confirma los datos de su tarjeta directamente en la pasarela.
+8. Stripe procesa el cargo de forma segura y notifica asíncronamente mediante Webhook a `CTR_Inscripcion`.
+9. El controlador registra la transacción de pago de forma persistente en `CE_Pago`.
+10. El controlador actualiza el estado del postulante a "Inscrito" en la entidad `CE_Postulante`.
 
 ```plantuml
 @startuml Seq_CU07
-skinparam backgroundColor #FEFEFE
-autonumber
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
 
-actor "Postulante" as Post
-participant "React Frontend (Inscripcion)" as UI
-participant "InscripcionController" as Ctrl
-participant "StripeService" as Stripe
-database "PostgreSQL" as DB
-participant "Stripe API Cloud" as StripeCloud
+actor "Postulante" as Act
+participant "IU_Inscripcion" as UI <<Form>>
+participant "CTR_Inscripcion" as Ctrl <<ctr>>
+participant "PasarelaStripe" as B_Stripe <<Form>>
+participant "CE_Pago" as E_Pago <<BD>>
+participant "CE_Postulante" as E_Post <<BD>>
 
-Post -> UI : Clic en "Pagar Matrícula"
-UI -> Ctrl : POST /pago/checkout (CSRF Token)
-Ctrl -> Stripe : crearCheckoutSesion(postulanteId)
-Stripe -> StripeCloud : POST /v3/checkout/sessions (monto, CI, keys)
-StripeCloud --> Stripe : SessionObject (id, url)
-Stripe --> Ctrl : SessionObject
-Ctrl --> UI : Inertia.visit(url_redireccion_stripe)
-UI -> Post : Redirigir a Pasarela Stripe Segura
-Post -> StripeCloud : Ingresar tarjeta y confirmar pago
-StripeCloud -> StripeCloud : Procesar cargo monetario
-StripeCloud -> Ctrl : Webhook POST /api/stripe/webhook (checkout.session.completed)
-Ctrl -> Ctrl : verificarFirmaWebhook()
-Ctrl -> DB : UPDATE postulantes SET estado = 'Inscrito' WHERE ci = checkout.ci
-DB --> Ctrl : OK
-Ctrl -> DB : INSERT INTO pagos (ci, transaccion_id, monto, estado) VALUES (...)
-DB --> Ctrl : OK
-StripeCloud --> Post : Redirección de éxito a /preinscripcion/exito
+Act -> UI : 1: Solicitar pago de matrícula()
+activate UI
+UI -> Ctrl : 2: IniciarProcesoPago(postulanteId)
+activate Ctrl
+Ctrl -> B_Stripe : 3: CrearSesionPago(monto)
+activate B_Stripe
+B_Stripe --> Ctrl : 4: UrlRedireccionSesion
+deactivate B_Stripe
+Ctrl --> UI : 5: RedirigirAPasarela()
+deactivate Ctrl
+UI --> Act : 6: MostrarFormularioPagoStripe()
+deactivate UI
+
+Act -> B_Stripe : 7: ConfirmarDatosTarjeta()
+activate B_Stripe
+B_Stripe --> Ctrl : 8: NotificarPagoExitoso(StripeWebhook)
+deactivate B_Stripe
+activate Ctrl
+Ctrl -> E_Pago : 9: CrearRegistroPago(monto, transaccionId)
+activate E_Pago
+E_Pago --> Ctrl : Confirmación
+deactivate E_Pago
+Ctrl -> E_Post : 10: ActualizarEstado("Inscrito")
+activate E_Post
+E_Post --> Ctrl : Confirmación
+deactivate E_Post
+deactivate Ctrl
 @enduml
 ```
 
-### 2. Diagrama de Secuencia para CU11: Asignar Postulantes a Grupos (Algoritmo Automático)
+#### 8. Diagrama de Secuencia para CU08: Detectar Postulante Recurrente
 
-Detalla la ejecución matemática del cálculo automático de grupos con cota estricta de 70 estudiantes por grupo y distribución equitativa.
+**Descripción detallada y dinámica del flujo de diseño:**
+1. El *Postulante* ingresa su cédula de identidad en la interfaz `IU_Preinscripcion`.
+2. La frontera delega la verificación al controlador `CTR_Preinscripcion` mediante `VerificarPostulanteExistente(ci)`.
+3. El controlador busca si existe algún expediente anterior con el mismo CI en la entidad `CE_Postulante`.
+4. La entidad devuelve los datos de coincidencia histórica.
+5. **[ALT]** El controlador evalúa el resultado de la búsqueda:
+   - **Postulante recurrente encontrado:** El controlador retorna los datos del registro anterior y la interfaz muestra una alerta indicando que el postulante ya se encuentra registrado.
+   - **Postulante nuevo:** El controlador confirma que no existen antecedentes y la interfaz permite continuar con el registro normal.
+
+```plantuml
+@startuml Seq_CU08
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Postulante" as Act
+participant "IU_Preinscripcion" as UI <<Form>>
+participant "CTR_Preinscripcion" as Ctrl <<ctr>>
+participant "CE_Postulante" as E_Post <<BD>>
+
+Act -> UI : 1: IngresarCI(ci)
+activate UI
+UI -> Ctrl : 2: VerificarPostulanteExistente(ci)
+activate Ctrl
+Ctrl -> E_Post : 3: BuscarRegistroAnterior(ci)
+activate E_Post
+E_Post --> Ctrl : 4: ResultadoBusqueda
+deactivate E_Post
+alt Postulante recurrente encontrado
+  Ctrl --> UI : 5: RetornarDatosRecurrente(datosAnteriores)
+  deactivate Ctrl
+  UI --> Act : 6: MostrarAlertaRecurrente()
+else Postulante nuevo (sin antecedentes)
+  Ctrl --> UI : 5: ConfirmarNuevoPostulante()
+  deactivate Ctrl
+  UI --> Act : 6: HabilitarRegistroNormal()
+end
+deactivate UI
+@enduml
+```
+
+#### 9. Diagrama de Secuencia para CU09: Buscar y Consultar Postulantes
+
+**Descripción detallada y dinámica del flujo de diseño:**
+1. El *Administrador* ingresa criterios de búsqueda en la interfaz `IU_Busqueda`.
+2. La frontera delega la solicitud al controlador `CTR_Busqueda` llamando a `BuscarPostulantes(criterio)`.
+3. El controlador ejecuta la consulta filtrada en la entidad de dominio `CE_Postulante`.
+4. La entidad retorna la colección con los expedientes coincidentes.
+5. El controlador devuelve la lista de resultados formateada a la interfaz.
+6. La frontera renderiza la grilla dinámica con los datos cargados.
+
+```plantuml
+@startuml Seq_CU09
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Administrador" as Act
+participant "IU_Busqueda" as UI <<Form>>
+participant "CTR_Busqueda" as Ctrl <<ctr>>
+participant "CE_Postulante" as E_Post <<BD>>
+
+Act -> UI : 1: IngresarFiltros(criterio)
+activate UI
+UI -> Ctrl : 2: BuscarPostulantes(criterio)
+activate Ctrl
+Ctrl -> E_Post : 3: EjecutarConsulta(criterio)
+activate E_Post
+E_Post --> Ctrl : 4: ListaResultados
+deactivate E_Post
+Ctrl --> UI : 5: RetornarResultados(lista)
+deactivate Ctrl
+UI --> Act : 6: RenderizarGrillaResultados()
+deactivate UI
+@enduml
+```
+
+#### 10. Diagrama de Secuencia para CU10: Calcular y Crear Grupos Automáticamente
+
+**Descripción detallada y dinámica del flujo de diseño:**
+1. El *Administrador* ejecuta la distribución automatizada desde la interfaz `IU_Grupos`.
+2. La frontera llama al orquestador `CTR_Planificacion` solicitando `IniciarAsignacionMasiva()`.
+3. El controlador consulta a `CE_Postulante` para obtener todos los alumnos en estado "Inscrito" sin grupo.
+4. La entidad retorna la nómina de estudiantes listos para ser distribuidos.
+5. El controlador calcula en memoria el número de grupos necesarios aplicando una cota superior de 70 personas por aula.
+6. El controlador consulta el stock y disponibilidad de infraestructura física en `CE_Aula`.
+7. La entidad de aula retorna los salones que se encuentran libres en la gestión.
+8. El controlador crea e inserta los nuevos objetos correspondientes en `CE_Grupo`.
+9. El controlador ejecuta secuencialmente en memoria el balanceo y distribución equitativa de turnos y salones.
+10. **[LOOP]** Para cada postulante inscrito, el controlador asocia al postulante con su respectivo grupo en `CE_AsignacionGrupo` y actualiza su estado a "En Evaluación" en `CE_Postulante`.
+11. El controlador confirma el éxito de la asignación a la frontera de usuario.
+12. La interfaz refresca y despliega los grupos formados con sus respectivos alumnos asignados.
+
+```plantuml
+@startuml Seq_CU10
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Administrador" as Act
+participant "IU_Grupos" as UI <<Form>>
+participant "CTR_Planificacion" as Ctrl <<ctr>>
+participant "CE_Postulante" as E_Post <<BD>>
+participant "CE_Aula" as E_Aula <<BD>>
+participant "CE_Grupo" as E_Grupo <<BD>>
+participant "CE_AsignacionGrupo" as E_Asig <<BD>>
+
+Act -> UI : 1: EjecutarCalculoAsignacion()
+activate UI
+UI -> Ctrl : 2: IniciarAsignacionMasiva()
+activate Ctrl
+Ctrl -> E_Post : 3: ObtenerPostulantesInscritosSinGrupo()
+activate E_Post
+E_Post --> Ctrl : 4: ListaPostulantes
+deactivate E_Post
+Ctrl -> Ctrl : 5: CalcularGruposNecesarios(CEIL(Total/70))
+Ctrl -> E_Aula : 6: VerificarDisponibilidadAulas()
+activate E_Aula
+E_Aula --> Ctrl : 7: AulasDisponibles
+deactivate E_Aula
+Ctrl -> E_Grupo : 8: CrearNuevosGrupos(cantidad, horarios)
+activate E_Grupo
+E_Grupo --> Ctrl : Confirmación
+deactivate E_Grupo
+Ctrl -> Ctrl : 9: CalcularDistribucionEquitativa()
+loop Para cada postulante inscrito sin grupo
+  Ctrl -> E_Asig : 10: VincularPostulanteAGrupo(postulanteId, grupoId)
+  activate E_Asig
+  E_Asig --> Ctrl : Confirmación
+  deactivate E_Asig
+  Ctrl -> E_Post : 11: ActualizarEstado("En Evaluación")
+  activate E_Post
+  E_Post --> Ctrl : Confirmación
+  deactivate E_Post
+end
+Ctrl --> UI : 12: ConfirmarAsignacionExitosa()
+deactivate Ctrl
+UI --> Act : 13: MostrarGruposConPostulantes()
+deactivate UI
+@enduml
+```
+
+#### 11. Diagrama de Secuencia para CU11: Asignar Postulantes a Grupos (Manual/Individual)
+
+**Descripción detallada y dinámica del flujo de diseño:**
+1. El *Administrador* solicita reubicar o asignar manualmente un postulante desde la interfaz `IU_Grupos`.
+2. La frontera delega la acción al controlador `CTR_Planificacion` mediante `ReasignarPostulante(postulanteId, nuevoGrupoId)`.
+3. El controlador obtiene los datos biográficos de `CE_Postulante` para verificar sus opciones de turno.
+4. La entidad devuelve los datos correspondientes del expediente.
+5. El controlador valida la cota física de capacidad máxima directamente sobre la entidad `CE_Grupo`.
+6. El grupo devuelve la capacidad restante y stock de vacantes.
+7. **[ALT]** El controlador evalúa la capacidad disponible:
+   - **Capacidad disponible:** El controlador registra la nueva relación en `CE_AsignacionGrupo` y confirma el éxito.
+   - **Grupo lleno (capacidad máxima alcanzada):** El controlador rechaza la operación y notifica que el grupo ha alcanzado su capacidad máxima de 70 estudiantes.
+8. La interfaz actualiza la vista detallada o muestra el error.
 
 ```plantuml
 @startuml Seq_CU11
-skinparam backgroundColor #FEFEFE
-autonumber
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
 
-actor "Administrador" as Admin
-participant "React Frontend (Grupos)" as UI
-participant "GruposController" as Ctrl
-participant "GruposService" as Service
-database "PostgreSQL" as DB
+actor "Administrador" as Act
+participant "IU_Grupos" as UI <<Form>>
+participant "CTR_Planificacion" as Ctrl <<ctr>>
+participant "CE_Postulante" as E_Post <<BD>>
+participant "CE_Grupo" as E_Grupo <<BD>>
+participant "CE_AsignacionGrupo" as E_Asig <<BD>>
 
-Admin -> UI : Clic en "Generar Grupos Automáticamente"
-UI -> Ctrl : POST /admin/grupos/generar (gestión_id)
-Ctrl -> Service : ejecutarAlgoritmoGrupos(gestión_id)
-Service -> DB : SELECT * FROM postulantes WHERE estado = 'Inscrito' AND grupo_id IS NULL
-DB --> Service : ListaPostulantes (1000 estudiantes)
-Service -> Service : Agrupar postulantes por Turno de preferencia
-loop Para cada Turno (Mañana, Tarde, Noche)
-  Service -> Service : N = CantidadPostulantesTurno
-  Service -> Service : CantidadGrupos = CEIL(N / 70)
-  loop i de 1 a CantidadGrupos
-    Service -> DB : INSERT INTO grupos (numero, turno, aula_id) VALUES (...)
-    DB --> Service : GrupoObjeto
-  end
-  Service -> Service : Distribuir equitativamente N postulantes entre los CantidadGrupos creados
-  loop Para cada postulante
-    Service -> DB : UPDATE asignaciones_grupo SET grupo_id = id_asignado WHERE postulante_id = id
-    DB --> Service : OK
-  end
+Act -> UI : 1: SolicitarAjusteGrupo(postulanteId, nuevoGrupoId)
+activate UI
+UI -> Ctrl : 2: ReasignarPostulante(postulanteId, nuevoGrupoId)
+activate Ctrl
+Ctrl -> E_Post : 3: ObtenerPostulante(postulanteId)
+activate E_Post
+E_Post --> Ctrl : 4: DatosPostulante
+deactivate E_Post
+Ctrl -> E_Grupo : 5: VerificarCapacidad(nuevoGrupoId)
+activate E_Grupo
+E_Grupo --> Ctrl : 6: CapacidadDisponible
+deactivate E_Grupo
+alt Capacidad disponible en el grupo
+  Ctrl -> E_Asig : 7: ActualizarVinculoGrupo()
+  activate E_Asig
+  E_Asig --> Ctrl : Confirmación
+  deactivate E_Asig
+  Ctrl --> UI : 8: RetornarExito()
+  deactivate Ctrl
+  UI --> Act : 9: ActualizarListaGrupo()
+else Grupo lleno (capacidad máxima 70 alcanzada)
+  Ctrl --> UI : 7: NotificarError("Grupo lleno, capacidad máxima alcanzada")
+  deactivate Ctrl
+  UI --> Act : 8: MostrarMensajeError()
 end
-Service --> Ctrl : ResumenAsignacion (Total creados, distribuidos)
-Ctrl --> UI : Inertia.render("Admin/Grupos", success_message)
-UI --> Admin : Mostrar grilla con grupos y alumnos distribuidos
+deactivate UI
 @enduml
 ```
 
-### 3. Diagrama de Secuencia para CU14: Cargar Notas Masivamente (CSV)
+#### 12. Diagrama de Secuencia para CU12: Asignar Docente a Grupo y Materia
 
-Detalla cómo el sistema procesa por lotes la subida de un documento de notas delimitado, aplicando validación de datos en servidor antes de guardar.
+**Descripción detallada y dinámica del flujo de diseño:**
+1. El *Administrador* asigna un docente a un grupo y materia en la pantalla de gestión de `IU_Docentes`.
+2. La frontera delega la lógica al controlador `CTR_Planificacion` llamando a `VincularDocenteMateria(docenteId, grupoId, materiaId)`.
+3. El controlador verifica la carga horaria actual de la entidad `CE_Docente` para mitigar choques u sobrecarga.
+4. La entidad devuelve la carga horaria activa.
+5. **[ALT]** El controlador evalúa la carga horaria del docente:
+   - **Carga disponible (< 4 grupos):** El controlador valida la especialidad del docente en `CE_Materia`, registra la asignación en `CE_Grupo` y retorna éxito.
+   - **Carga máxima alcanzada (4 grupos):** El controlador rechaza la operación e indica que el docente ya tiene la carga máxima asignada.
+6. La interfaz actualiza la matriz de docentes o muestra el error correspondiente.
+
+```plantuml
+@startuml Seq_CU12
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Administrador" as Act
+participant "IU_Docentes" as UI <<Form>>
+participant "CTR_Planificacion" as Ctrl <<ctr>>
+participant "CE_Docente" as E_Doc <<BD>>
+participant "CE_Materia" as E_Mat <<BD>>
+participant "CE_Grupo" as E_Grup <<BD>>
+
+Act -> UI : 1: AsignarDocente(docenteId, grupoId, materiaId)
+activate UI
+UI -> Ctrl : 2: VincularDocenteMateria(docenteId, grupoId, materiaId)
+activate Ctrl
+Ctrl -> E_Doc : 3: VerificarCargaHoraria(docenteId)
+activate E_Doc
+E_Doc --> Ctrl : 4: CargaHorariaActiva
+deactivate E_Doc
+alt Carga disponible (grupos < 4)
+  Ctrl -> E_Mat : 5: ValidarEspecialidad(docenteId, materiaId)
+  activate E_Mat
+  E_Mat --> Ctrl : 6: EspecialidadValida
+  deactivate E_Mat
+  Ctrl -> E_Grup : 7: RegistrarAsignacionMateria(docenteId, materiaId)
+  activate E_Grup
+  E_Grup --> Ctrl : Confirmación
+  deactivate E_Grup
+  Ctrl --> UI : 8: RetornarExito()
+  deactivate Ctrl
+  UI --> Act : 9: ActualizarMatrizDocentes()
+else Carga máxima alcanzada (4 grupos)
+  Ctrl --> UI : 5: NotificarError("Docente ya tiene 4 grupos asignados")
+  deactivate Ctrl
+  UI --> Act : 6: MostrarAlertaCargaMaxima()
+end
+deactivate UI
+@enduml
+```
+
+#### 23. Diagrama de Secuencia para CU23: Realizar Simulacro de Examen (Práctica)
+
+**Descripción detallada y dinámica del flujo de diseño:**
+1. El *Postulante* solicita iniciar un simulacro de examen en la interfaz reactiva `IU_Simulacro`.
+2. La frontera delega la inicialización al controlador `CTR_Simulacro` llamando a `generarPreguntasSimulacro()`.
+3. El controlador consulta a `CE_PreguntaSimulacro` para obtener el banco completo de preguntas cargadas.
+4. La entidad devuelve la colección de preguntas de práctica registradas.
+5. El controlador selecciona aleatoriamente 10 preguntas por cada una de las 4 materias (40 preguntas en total).
+6. El controlador retorna la lista de preguntas seleccionadas a la interfaz.
+7. La frontera renderiza las preguntas e inicializa un temporizador visual de cuenta regresiva en pantalla.
+8. El postulante contesta la prueba y presiona el botón para finalizar el examen, enviando sus respuestas a `IU_Simulacro`.
+9. La frontera delega la calificación al controlador `CTR_Simulacro` mediante `calificarSimulacro(respuestas)`.
+10. El controlador evalúa en memoria las respuestas del postulante contra las respuestas correctas de la entidad y calcula la nota.
+11. El controlador retorna la nota final obtenida en el simulacro de forma síncrona.
+12. La frontera detiene el temporizador y muestra el reporte detallado con las respuestas correctas, incorrectas y la nota final.
+
+```plantuml
+@startuml Seq_CU23
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Postulante" as Act
+participant "IU_Simulacro" as UI <<Form>>
+participant "CTR_Simulacro" as Ctrl <<ctr>>
+participant "CE_PreguntaSimulacro" as E_Preg <<BD>>
+
+Act -> UI : 1: IniciarSimulacro()
+activate UI
+UI -> Ctrl : 2: generarPreguntasSimulacro()
+activate Ctrl
+Ctrl -> E_Preg : 3: obtenerBancoPreguntas()
+activate E_Preg
+E_Preg --> Ctrl : 4: BancoPreguntas
+deactivate E_Preg
+Ctrl -> Ctrl : 5: SeleccionarPreguntasAleatorias()
+Ctrl --> UI : 6: ListaPreguntasGeneradas
+deactivate Ctrl
+UI --> Act : 7: mostrarTemporizadorYPreguntas()
+deactivate UI
+
+Act -> UI : 8: enviarRespuestas(respuestas)
+activate UI
+UI -> Ctrl : 9: calificarSimulacro(respuestas)
+activate Ctrl
+Ctrl -> Ctrl : 10: CalcularNotaSimulacro()
+Ctrl --> UI : 11: retornarNotaSimulacro(nota)
+deactivate Ctrl
+UI --> Act : 12: mostrarResultadosSimulacro()
+deactivate UI
+@enduml
+```
+
+
+#### 13. Diagrama de Secuencia para CU13: Registrar Notas (Individual)
+
+**Descripción detallada y dinámica del flujo de diseño:**
+1. El *Administrador* modifica la calificación de un postulante en la interfaz `IU_Notas`.
+2. La frontera delega la solicitud al controlador `CTR_Evaluacion` llamando a `ActualizarNotaIndividual(...)`.
+3. **[ALT]** El controlador valida la nota ingresada:
+   - **Nota válida (0-100):** El controlador guarda la nota en `CE_Examen`, recalcula el promedio, actualiza `CE_NotaFinal`, registra en bitácora y retorna éxito.
+   - **Nota fuera de rango:** El controlador rechaza la operación y notifica que la nota debe estar entre 0 y 100.
+4. La interfaz actualiza visualmente la planilla de notas o muestra el error.
+
+```plantuml
+@startuml Seq_CU13
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Administrador" as Act
+participant "IU_Notas" as UI <<Form>>
+participant "CTR_Evaluacion" as Ctrl <<ctr>>
+participant "CE_Examen" as E_Exam <<BD>>
+participant "CE_NotaFinal" as E_Nota <<BD>>
+participant "CE_BitacoraAcceso" as E_Bit <<BD>>
+
+Act -> UI : 1: ModificarNota(postulanteId, materia, nuevaNota)
+activate UI
+UI -> Ctrl : 2: ActualizarNotaIndividual(postulanteId, materia, nuevaNota)
+activate Ctrl
+alt Nota válida (0 <= nota <= 100)
+  Ctrl -> E_Exam : 3: GuardarNota(materia, nuevaNota)
+  activate E_Exam
+  E_Exam --> Ctrl : Confirmación
+  deactivate E_Exam
+  Ctrl -> Ctrl : 4: RecalcularPromedio()
+  Ctrl -> E_Nota : 5: ActualizarPromedio()
+  activate E_Nota
+  E_Nota --> Ctrl : Confirmación
+  deactivate E_Nota
+  Ctrl -> E_Bit : 6: RegistrarAjusteManual()
+  activate E_Bit
+  E_Bit --> Ctrl : Confirmación
+  deactivate E_Bit
+  Ctrl --> UI : 7: RetornarExito()
+  deactivate Ctrl
+  UI --> Act : 8: ActualizarPlanillaNotas()
+else Nota fuera de rango
+  Ctrl --> UI : 3: NotificarError("La nota debe estar entre 0 y 100")
+  deactivate Ctrl
+  UI --> Act : 4: MostrarMensajeError()
+end
+deactivate UI
+@enduml
+```
+
+#### 14. Diagrama de Secuencia para CU14: Cargar Notas Masivamente (CSV)
+
+**Descripción detallada y dinámica del flujo de diseño:**
+1. El *Administrador* selecciona e importa un archivo de notas plano (CSV) en la interfaz `IU_Notas`.
+2. La frontera delega el procesamiento masivo al controlador `CTR_Evaluacion` llamando a `ProcesarCargaCSV(file)`.
+3. El controlador inicia un bucle transaccional para cada fila del archivo CSV, consultando la existencia del CI en `CE_Postulante`.
+4. La entidad devuelve la información y datos del postulante consultado.
+5. El controlador registra o actualiza la nota correspondiente en la entidad de examen `CE_Examen`.
+6. El controlador ejecuta de forma interna la fórmula del promedio ponderado en memoria.
+7. El controlador actualiza la nota consolidada y determina el estado por materia en `CE_NotaFinal`.
+8. Concluido el procesamiento de las filas, el controlador registra el log del proceso en la bitácora de `CE_BitacoraAcceso`.
+9. El controlador confirma y devuelve el resumen del resultado de la carga masiva a la frontera.
+10. La interfaz muestra un cuadro con el reporte de registros importados exitosamente y filas omitidas.
 
 ```plantuml
 @startuml Seq_CU14
-skinparam backgroundColor #FEFEFE
-autonumber
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
 
-actor "Administrador" as Admin
-participant "React Frontend (Notas)" as UI
-participant "NotasController" as Ctrl
-participant "CargaNotasService" as Service
-database "PostgreSQL" as DB
+actor "Administrador" as Act
+participant "IU_Notas" as UI <<Form>>
+participant "CTR_Evaluacion" as Ctrl <<ctr>>
+participant "CE_Postulante" as E_Post <<BD>>
+participant "CE_Examen" as E_Exam <<BD>>
+participant "CE_NotaFinal" as E_Nota <<BD>>
+participant "CE_BitacoraAcceso" as E_Bit <<BD>>
 
-Admin -> UI : Seleccionar archivo CSV y Clic en "Procesar Carga Masiva"
-UI -> Ctrl : POST /admin/notas/masivo (FileCSV)
-Ctrl -> Service : procesarArchivoCSV(FileCSV)
-Service -> Service : Validar formato de columnas (CI, Computacion, Matematicas, Ingles, Fisica, ExamenNum)
-loop Para cada fila del archivo CSV (Lotes transaccionales)
-  Service -> Service : Validar rango de notas (0 a 100)
-  Service -> DB : SELECT id FROM postulantes WHERE ci = fila.ci
-  alt Si el postulante existe e inscrito
-    DB --> Service : postulante_id
-    Service -> DB : INSERT INTO examenes (postulante_id, materia_id, numero_examen, nota) VALUES (...) ON CONFLICT UPDATE
-    DB --> Service : OK
-    Service -> Service : Recalcular promedio ponderado (30% Ex1 + 30% Ex2 + 40% Ex3)
-    Service -> Service : Determinar estado final (APROBADO si todas las materias >= 60)
-    Service -> DB : INSERT/UPDATE notas_finales (postulante_id, materia_id, promedio, estado)
-    DB --> Service : OK
-  else Postulante no existe
-    Service -> Service : Registrar error en log de inconsistencias (ci)
-  end
+Act -> UI : 1: CargarArchivoCSV(file)
+activate UI
+UI -> Ctrl : 2: ProcesarCargaCSV(file)
+activate Ctrl
+loop Para cada fila del archivo CSV
+  Ctrl -> E_Post : 3: ObtenerPorCI(ci)
+  activate E_Post
+  E_Post --> Ctrl : DatosPostulante
+  deactivate E_Post
+  Ctrl -> E_Exam : 5: RegistrarNotaExamen(nota, numero)
+  activate E_Exam
+  E_Exam --> Ctrl : Confirmación
+  deactivate E_Exam
+  Ctrl -> Ctrl : 6: CalcularPromedioPonderado()
+  Ctrl -> E_Nota : 7: ActualizarNotaFinal(promedio, estado)
+  activate E_Nota
+  E_Nota --> Ctrl : Confirmación
+  deactivate E_Nota
 end
-Service --> Ctrl : ResumenOperacion (Cargados exitosamente, Errores)
-Ctrl --> UI : Inertia.render("Admin/Notas", {resumen: ResumenOperacion})
-UI --> Admin : Mostrar resumen (Ej: 998 exitosos, 2 filas omitidas por CI erróneo)
+Ctrl -> E_Bit : 8: RegistrarOperacionCSV(usuarioId, log)
+activate E_Bit
+E_Bit --> Ctrl : Confirmación
+deactivate E_Bit
+Ctrl --> UI : 9: ConfirmarCargaExitosa(resumen)
+deactivate Ctrl
+UI --> Act : 10: MostrarResumenCarga()
+deactivate UI
 @enduml
 ```
 
-### 4. Diagrama de Secuencia para CU17: Asignar Carreras por Cupo (Algoritmo de Admisión)
+#### 15. Diagrama de Secuencia para CU15: Calcular Promedio Ponderado
 
-Detalla la asignación de plazas a los estudiantes de manera justa y en orden de mejor rendimiento general académico.
+**Descripción detallada y dinámica del flujo de diseño:**
+1. El *Sistema* o el usuario dispara el cálculo general de calificaciones en `IU_Notas`.
+2. La frontera delega la solicitud de ejecución de la fórmula ponderada al controlador `CTR_Evaluacion`.
+3. **[LOOP]** Para cada materia del postulante:
+   - El controlador consulta a `CE_Examen` para extraer las calificaciones parciales.
+   - **[ALT]** El controlador verifica la completitud de las notas:
+     - **3 notas completas:** Ejecuta la ponderación (30% Ex1 + 30% Ex2 + 40% Ex3) y guarda el promedio en `CE_NotaFinal`.
+     - **Notas incompletas:** Calcula un promedio parcial indicando "Incompleto".
+4. El controlador retorna la confirmación del cálculo exitoso a la interfaz.
+5. La frontera actualiza de forma instantánea el listado y grilla de promedios ponderados.
+
+```plantuml
+@startuml Seq_CU15
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Sistema" as Act
+participant "IU_Notas" as UI <<Form>>
+participant "CTR_Evaluacion" as Ctrl <<ctr>>
+participant "CE_Examen" as E_Exam <<BD>>
+participant "CE_NotaFinal" as E_Nota <<BD>>
+
+Act -> UI : 1: SolicitarCalculoGlobal()
+activate UI
+UI -> Ctrl : 2: EjecutarCalculoPromedios()
+activate Ctrl
+loop Para cada materia del postulante
+  Ctrl -> E_Exam : 3: ObtenerNotasPorMateria(materiaId)
+  activate E_Exam
+  E_Exam --> Ctrl : 4: NotasMateria
+  deactivate E_Exam
+  alt 3 exámenes registrados (notas completas)
+    Ctrl -> Ctrl : 5: AplicarFormulaPonderacion(30%-30%-40%)
+    Ctrl -> E_Nota : 6: GuardarPromedioFinal(promedio, "Completo")
+    activate E_Nota
+    E_Nota --> Ctrl : Confirmación
+    deactivate E_Nota
+  else Notas incompletas (faltan exámenes)
+    Ctrl -> Ctrl : 5: CalcularPromedioParcial()
+    Ctrl -> E_Nota : 6: GuardarPromedioParcial(promedio, "Incompleto")
+    activate E_Nota
+    E_Nota --> Ctrl : Confirmación
+    deactivate E_Nota
+  end
+end
+Ctrl --> UI : 7: RetornarExito()
+deactivate Ctrl
+UI --> Act : 8: RefrescarVistaPromedios()
+deactivate UI
+@enduml
+```
+
+#### 16. Diagrama de Secuencia para CU16: Determinar Estado (Aprobado/Reprobado)
+
+**Descripción detallada y dinámica del flujo de diseño:**
+1. El *Sistema* o el usuario dispara la evaluación del estado académico final en la interfaz `IU_Notas`.
+2. La frontera delega la evaluación al controlador de negocio `CTR_Evaluacion`.
+3. El controlador recupera todas las notas consolidadas de la entidad `CE_NotaFinal`.
+4. La entidad devuelve los promedios calculados para cada estudiante.
+5. **[LOOP]** Para cada postulante con notas completas:
+   - El controlador valida si el promedio es ≥60 en cada materia.
+   - **[ALT]** El controlador determina el estado:
+     - **Todas las materias ≥60:** Actualiza el estado a "Aprobado" en `CE_Postulante`.
+     - **Alguna materia <60:** Actualiza el estado a "Reprobado" en `CE_Postulante`.
+6. El controlador confirma a la interfaz que la evaluación concluyó.
+7. La frontera refresca y muestra los distintivos visuales del estado del postulante.
+
+```plantuml
+@startuml Seq_CU16
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Sistema" as Act
+participant "IU_Notas" as UI <<Form>>
+participant "CTR_Evaluacion" as Ctrl <<ctr>>
+participant "CE_NotaFinal" as E_Nota <<BD>>
+participant "CE_Postulante" as E_Post <<BD>>
+
+Act -> UI : 1: EjecutarDeterminacionEstado()
+activate UI
+UI -> Ctrl : 2: EvaluarAprobacionMasiva()
+activate Ctrl
+Ctrl -> E_Nota : 3: ObtenerPromediosCalculados()
+activate E_Nota
+E_Nota --> Ctrl : 4: PromediosCalculados
+deactivate E_Nota
+loop Para cada postulante con notas completas
+  Ctrl -> Ctrl : 5: ValidarUmbral(>=60 por cada materia)
+  alt Todas las materias >= 60
+    Ctrl -> E_Post : 6: ActualizarEstado("Aprobado")
+    activate E_Post
+    E_Post --> Ctrl : Confirmación
+    deactivate E_Post
+  else Alguna materia < 60
+    Ctrl -> E_Post : 6: ActualizarEstado("Reprobado")
+    activate E_Post
+    E_Post --> Ctrl : Confirmación
+    deactivate E_Post
+  end
+end
+Ctrl --> UI : 7: RetornarExito()
+deactivate Ctrl
+UI --> Act : 8: MostrarBadgesEstado()
+deactivate UI
+@enduml
+```
+
+#### 17. Diagrama de Secuencia para CU17: Asignar Carreras por Cupo (Algoritmo de Admisión)
+
+**Descripción detallada y dinámica del flujo de diseño:**
+1. El *Coordinador* de la facultad inicia el algoritmo masivo desde la interfaz `IU_Admision`.
+2. La frontera delega el procesamiento al controlador `CTR_AsignacionCarrera` llamando a `IniciarAsignacionMasiva()`.
+3. El controlador consulta a `CE_Postulante` para recuperar los postulantes con estado "Aprobado", ordenados descendente por su promedio general.
+4. La entidad de postulante devuelve la lista de aprobados por mérito.
+5. Para cada postulante del bucle, el controlador consulta la entidad de cupos `CE_CupoGestion` de su primera opción de carrera.
+6. La entidad devuelve la disponibilidad de plazas.
+7. Si es mayor a 0, el controlador crea el registro en `CE_Admision` indicando la vía y decrementa el cupo en `CE_CupoGestion`.
+8. En caso de que se encuentren agotados, el controlador repite el procedimiento con la segunda opción del postulante.
+9. Si ambas opciones están llenas, el controlador marca de forma persistente al postulante en "Pendiente Reasignacion" en `CE_Postulante`.
+10. El controlador anota e inserta una alerta o log de contingencia por cupos agotados en la entidad `CE_BitacoraAcceso`.
+11. Completados los postulantes, el controlador confirma el éxito de la operación a la interfaz.
+12. La frontera actualiza el dashboard general de vacantes consumidas y postulantes excedidos.
 
 ```plantuml
 @startuml Seq_CU17
-skinparam backgroundColor #FEFEFE
-autonumber
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
 
-actor "Coordinador" as Coord
-participant "React Frontend (Admisiones)" as UI
-participant "AdmisionController" as Ctrl
-participant "AdmisionService" as Service
-database "PostgreSQL" as DB
+actor "Coordinador" as Act
+participant "IU_Admision" as UI <<Form>>
+participant "CTR_AsignacionCarrera" as Ctrl <<ctr>>
+participant "CE_Postulante" as E_Post <<BD>>
+participant "CE_CupoGestion" as E_Cupo <<BD>>
+participant "CE_Carrera" as E_Carr <<BD>>
+participant "CE_Admision" as E_Admi <<BD>>
+participant "CE_BitacoraAcceso" as E_Bit <<BD>>
 
-Coord -> UI : Clic en "Procesar Asignación de Carreras"
-UI -> Ctrl : POST /admin/admisiones/procesar (gestión_id)
-Ctrl -> Service : procesarAlgoritmoAdmision(gestión_id)
-Service -> DB : SELECT * FROM postulantes_notas_consolidadas WHERE estado_final = 'APROBADO' ORDER BY promedio_general DESC
-DB --> Service : ListaAprobados (Ordenados de mayor a menor)
-loop Para cada postulante de la ListaAprobados
-  Service -> DB : SELECT cupos_disponibles FROM cupos_gestion WHERE carrera_id = postulante.primera_opcion
-  DB --> Service : cupos_primera
-  alt Si cupos_primera > 0
-    Service -> DB : INSERT INTO admisiones (postulante_id, carrera_id, via) VALUES (id, primera_opcion, '1ra Opción')
-    Service -> DB : UPDATE cupos_gestion SET cupos_disponibles = cupos_disponibles - 1 WHERE carrera_id = primera_opcion
-    DB --> Service : OK
-  else Primera opción llena
-    Service -> DB : SELECT cupos_disponibles FROM cupos_gestion WHERE carrera_id = postulante.segunda_opcion
-    DB --> Service : cupos_segunda
-    alt Si cupos_segunda > 0
-      Service -> DB : INSERT INTO admisiones (postulante_id, carrera_id, via) VALUES (id, segunda_opcion, '2da Opción')
-      Service -> DB : UPDATE cupos_gestion SET cupos_disponibles = cupos_disponibles - 1 WHERE carrera_id = segunda_opcion
-      DB --> Service : OK
-    else Ambas opciones llenas
-      Service -> DB : UPDATE postulantes SET estado = 'Pendiente Reasignacion' WHERE id = postulante_id
-      Service -> DB : INSERT INTO alertas_admision (postulante_id, mensaje) VALUES (...)
-      DB --> Service : OK
-    end
+Act -> UI : 1: ProcesarAsignacionCarreras()
+activate UI
+UI -> Ctrl : 2: IniciarAsignacionMasiva()
+activate Ctrl
+Ctrl -> E_Post : 3: ObtenerAprobadosOrdenadosPorPromedio()
+activate E_Post
+E_Post --> Ctrl : 4: ListaAprobados
+deactivate E_Post
+loop Para cada postulante aprobado
+  Ctrl -> E_Cupo : 5: VerificarCupoDisponible(carreraId)
+  activate E_Cupo
+  E_Cupo --> Ctrl : 6: CupoDisponible
+  deactivate E_Cupo
+  alt Cupo disponible > 0
+    Ctrl -> E_Admi : 7: RegistrarAdmision(postulanteId, carreraId, via)
+    activate E_Admi
+    E_Admi --> Ctrl : Confirmación
+    deactivate E_Admi
+    Ctrl -> E_Cupo : 8: DecrementarCuposDisponibles(carreraId)
+    activate E_Cupo
+    E_Cupo --> Ctrl : Confirmación
+    deactivate E_Cupo
+  else Cupos agotados en 1ra y 2da opción
+    Ctrl -> E_Post : 9: MarcarPendienteReasignacion()
+    activate E_Post
+    E_Post --> Ctrl : Confirmación
+    deactivate E_Post
+    Ctrl -> E_Bit : 10: RegistrarAlertaCuposLlenos(ci, promedio)
+    activate E_Bit
+    E_Bit --> Ctrl : Confirmación
+    deactivate E_Bit
   end
 end
-Service --> Ctrl : ResumenAdmision (Admitidos, Excedidos)
-Ctrl --> UI : Inertia.render("Admin/Admisiones", success_data)
-UI --> Coord : Mostrar dashboard de cupos consumidos e inconsistencias
+Ctrl --> UI : 11: ConfirmarProcesamientoExito()
+deactivate Ctrl
+UI --> Act : 12: MostrarResultadosYAlertas()
+deactivate UI
 @enduml
 ```
+
+#### 18. Diagrama de Secuencia para CU18: Configurar Cupos por Carrera
+
+**Descripción detallada y dinámica del flujo de diseño:**
+1. El *Administrador* o decano establece las vacantes permitidas en `IU_Configuracion`.
+2. La frontera delega la actualización al controlador `CTR_Asignacion` llamando a `ActualizarCupos(cuposPorCarrera)`.
+3. El controlador guarda los nuevos límites configurados de forma persistente en `CE_CupoGestion`.
+4. El controlador retorna la confirmación del éxito de la configuración.
+5. La interfaz renderiza el mensaje de éxito de la persistencia de cupos.
+
+```plantuml
+@startuml Seq_CU18
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Administrador" as Act
+participant "IU_Configuracion" as UI <<Form>>
+participant "CTR_Asignacion" as Ctrl <<ctr>>
+participant "CE_CupoGestion" as E_Cupo <<BD>>
+
+Act -> UI : 1: EstablecerLimites(cuposPorCarrera)
+activate UI
+UI -> Ctrl : 2: ActualizarCupos(cuposPorCarrera)
+activate Ctrl
+Ctrl -> E_Cupo : 3: GuardarNuevosLimites()
+activate E_Cupo
+E_Cupo --> Ctrl : Confirmación
+deactivate E_Cupo
+Ctrl --> UI : 4: RetornarConfirmacion()
+deactivate Ctrl
+UI --> Act : 5: MostrarMensajeGuardado()
+deactivate UI
+@enduml
+```
+
+#### 19. Diagrama de Secuencia para CU19: Generar Reporte Estructurado
+
+**Descripción detallada y dinámica del flujo de diseño:**
+1. El *Coordinador* selecciona una plantilla oficial estructurada (ej: PDF) en `IU_Reportes`.
+2. La frontera delega la solicitud al controlador `CTR_Reportes` llamando a `GenerarReporteEstructurado(tipo)`.
+3. El controlador realiza la consulta de admisión en la entidad `CE_Admision`.
+4. La entidad devuelve la colección de admisiones registradas.
+5. El controlador cruza los datos de admisión correspondientes en `CE_Postulante`.
+6. La entidad de postulante devuelve la información biográfica básica.
+7. El controlador orquesta la compilación y formateo de la plantilla física (ej: PDF).
+8. El controlador retorna el documento stream binario a la interfaz de usuario.
+9. La frontera previsualiza o gatilla la descarga automática del documento en el navegador.
+
+```plantuml
+@startuml Seq_CU19
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Coordinador" as Act
+participant "IU_Reportes" as UI <<Form>>
+participant "CTR_Reportes" as Ctrl <<ctr>>
+participant "CE_Admision" as E_Admi <<BD>>
+participant "CE_Postulante" as E_Post <<BD>>
+
+Act -> UI : 1: SeleccionarPlantillaReporte(tipo)
+activate UI
+UI -> Ctrl : 2: GenerarReporteEstructurado(tipo)
+activate Ctrl
+Ctrl -> E_Admi : 3: ConsultarDatosAdmision()
+activate E_Admi
+E_Admi --> Ctrl : 4: DatosAdmision
+deactivate E_Admi
+Ctrl -> E_Post : 5: CruzarDatosPostulantes()
+activate E_Post
+E_Post --> Ctrl : 6: DatosPostulantes
+deactivate E_Post
+Ctrl -> Ctrl : 7: FormatearPDF()
+Ctrl --> UI : 8: RetornarDocumento()
+deactivate Ctrl
+UI --> Act : 9: MostrarPrevisualizacionPDF()
+deactivate UI
+@enduml
+```
+
+#### 20. Diagrama de Secuencia para CU20: Generar Reporte Dinámico
+
+**Descripción detallada y dinámica del flujo de diseño:**
+1. El *Coordinador* configura los filtros intermedios y columnas personalizadas en `IU_ReportesDinamicos`.
+2. La frontera delega la construcción de la consulta al controlador `CTR_Reportes` llamando a `EjecutarConsultaDinamica(...)`.
+3. El controlador ejecuta y compila la consulta parametrizada sobre la entidad agregada `CE_DataWarehouse`.
+4. La entidad de datos consolidados retorna el set físico de registros filtrados.
+5. El controlador devuelve la colección estructurada formateada a la interfaz.
+6. La frontera renderiza y exporta la grilla interactiva o grid en pantalla.
+
+```plantuml
+@startuml Seq_CU20
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Coordinador" as Act
+participant "IU_ReportesDinamicos" as UI <<Form>>
+participant "CTR_Reportes" as Ctrl <<ctr>>
+participant "CE_DataWarehouse" as E_Data <<BD>>
+
+Act -> UI : 1: ConfigurarFiltrosYCampos(parametros)
+activate UI
+UI -> Ctrl : 2: EjecutarConsultaDinamica(parametros)
+activate Ctrl
+Ctrl -> E_Data : 3: ConsultarBaseDeDatosBI(parametros)
+activate E_Data
+E_Data --> Ctrl : 4: DatosBI
+deactivate E_Data
+Ctrl --> UI : 5: RetornarTablaResultados()
+deactivate Ctrl
+UI --> Act : 6: RenderizarDataGrid()
+deactivate UI
+@enduml
+```
+
+#### 21. Diagrama de Secuencia para CU21: Reporte por Comando de Voz (IA)
+
+**Descripción detallada y dinámica del flujo de diseño:**
+1. El *Coordinador* presiona el control del micrófono y dicta una consulta en `IU_Voz`.
+2. La frontera transmite el audio capturado al backend mediante `ProcesarAudioNLP(audio)`.
+3. El controlador de IA `CTR_ReportesIA` delega la traducción asíncrona a la interfaz externa `CE_ServicioCognitivoIA` (OpenAI API).
+4. El servicio cognitivo interpreta semánticamente la voz y retorna una consulta estructurada (SQL / parámetros).
+5. El controlador orquesta la llamada y consulta dinámica sobre `CE_DataWarehouse`.
+6. El almacén de datos retorna la información consolidada extraída.
+7. El controlador consolida los resultados y los envía de vuelta a la interfaz.
+8. La frontera dibuja la gráfica interactiva correspondiente con la información recuperada.
+
+```plantuml
+@startuml Seq_CU21
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Coordinador" as Act
+participant "IU_Voz" as UI <<Form>>
+participant "CTR_ReportesIA" as Ctrl <<ctr>>
+participant "CE_ServicioCognitivoIA" as B_IA <<Form>>
+participant "CE_DataWarehouse" as E_Data <<BD>>
+
+Act -> UI : 1: EmitirComandoVoz(audio)
+activate UI
+UI -> Ctrl : 2: ProcesarAudioNLP(audio)
+activate Ctrl
+Ctrl -> B_IA : 3: TraducirIntencionASQL(audio)
+activate B_IA
+B_IA --> Ctrl : 4: RetornarConsultaEstructurada()
+deactivate B_IA
+Ctrl -> E_Data : 5: EjecutarConsultaGenerada()
+activate E_Data
+E_Data --> Ctrl : 6: ResultadosSQL
+deactivate E_Data
+Ctrl --> UI : 7: RetornarResultados()
+deactivate Ctrl
+UI --> Act : 8: MostrarResultadosVoz()
+deactivate UI
+@enduml
+```
+
+#### 22. Diagrama de Secuencia para CU22: Consultar Dashboard Estadístico en Tiempo Real
+
+**Descripción detallada y dinámica del flujo de diseño:**
+1. El *Coordinador* abre la vista del tablero principal en la interfaz reactiva `IU_Dashboard`.
+2. La frontera solicita de forma síncrona las estadísticas consolidadas al controlador `CTR_Reportes`.
+3. El controlador ejecuta consultas agregadas de postulantes inscritos sobre la entidad `CE_Postulante`.
+4. El postulante devuelve los resultados agrupados y segmentados por perfiles.
+5. El controlador realiza la consulta de rendimiento académico sobre `CE_NotaFinal`.
+6. La entidad de notas devuelve las tasas de aprobación y promedios por grupos.
+7. El controlador consulta el stock y avance de llenado de vacantes sobre `CE_CupoGestion`.
+8. La entidad de cupos devuelve el número de plazas consumidas.
+9. El controlador consolida la estructura agregada y la envía de vuelta a la interfaz.
+10. La frontera inicializa y renderiza los componentes y gráficos circulares en pantalla.
+11. El controlador orquesta la transmisión asíncrona de eventos a través de WebSocket a la frontera para re-renderizar gráficos en tiempo real cuando ocurran nuevas operaciones.
+
+```plantuml
+@startuml Seq_CU22
+skinparam actorStyle awesome
+skinparam backgroundColor transparent
+
+actor "Coordinador" as Act
+participant "IU_Dashboard" as UI <<Form>>
+participant "CTR_Reportes" as Ctrl <<ctr>>
+participant "CE_Postulante" as E_Post <<BD>>
+participant "CE_NotaFinal" as E_Nota <<BD>>
+participant "CE_CupoGestion" as E_Cupo <<BD>>
+
+Act -> UI : 1: AbrirDashboard()
+activate UI
+UI -> Ctrl : 2: SolicitarEstadisticasTiempoReal()
+activate Ctrl
+Ctrl -> E_Post : 3: ObtenerDistribuciónInscritos()
+activate E_Post
+E_Post --> Ctrl : 4: DistribucionInscritos
+deactivate E_Post
+Ctrl -> E_Nota : 5: ObtenerRendimientoYTasasAprobacion()
+activate E_Nota
+E_Nota --> Ctrl : 6: RendimientoYTasas
+deactivate E_Nota
+Ctrl -> E_Cupo : 7: ObtenerLlenadoCuposCarrera()
+activate E_Cupo
+E_Cupo --> Ctrl : 8: LlenadoCupos
+deactivate E_Cupo
+Ctrl --> UI : 9: EnviarDatosEstadisticos()
+deactivate Ctrl
+UI --> Act : 10: RenderizarGraficosYTarjetasKPI()
+activate UI
+... Suscripción WebSocket ...
+Ctrl -> UI : 11: TransmitirActualizacionesWebSocket(evento)
+deactivate UI
+@enduml
+´´´
+
 
 ---
 
 ## 6.3 Diseño de Datos (Modelo Lógico y DDL Físico)
 
-El diseño de datos define el modelo relacional físico en PostgreSQL 18. Para soportar el proceso del CUP, se han diseñado 16 tablas vinculadas. Las propiedades ACID garantizan consistencia total transaccional.
+El diseño de datos define el modelo relacional físico en PostgreSQL 18. Para soportar el proceso del CUP, se han diseñado 18 tablas vinculadas. Las propiedades ACID garantizan consistencia total transaccional.
 
 ### Diagrama del Modelo de Clases de Persistencia (Relacional)
 
@@ -2573,6 +5208,15 @@ class "notas_finales" {
   * estado: VARCHAR(20)
 }
 
+class "preguntas_simulacro" {
+  + id: BIGINT [PK]
+  --
+  * materia_id: BIGINT [FK]
+  * enunciado: TEXT
+  * opciones: TEXT
+  * respuesta_correcta: VARCHAR(255)
+}
+
 class "admisiones" {
   + id: BIGINT [PK]
   --
@@ -2604,6 +5248,7 @@ postulantes "1" -- "0..*" notas_finales
 materias "1" -- "0..*" notas_finales
 postulantes "1" -- "0..1" admisiones
 carreras "1" -- "0..*" admisiones
+materias "1" -- "0..*" preguntas_simulacro
 @enduml
 ```
 
@@ -2689,7 +5334,7 @@ CREATE TABLE postulantes (
     segunda_opcion_id BIGINT NOT NULL,
     turno_preferencia VARCHAR(20) NOT NULL CHECK (turno_preferencia IN ('Mañana', 'Tarde', 'Noche')),
     gestion_id BIGINT NOT NULL,
-    estado VARCHAR(50) DEFAULT 'Preinscrito' CHECK (estado IN ('Preinscrito', 'Inscrito', 'En Evaluacion', 'Aprobado', 'Reprobado', 'Pendiente Reasignacion')),
+    estado VARCHAR(50) DEFAULT 'Preinscrito' CHECK (estado IN ('Preinscrito', 'Verificado', 'Inscrito', 'En Evaluacion', 'Aprobado', 'Reprobado', 'Pendiente Reasignacion')),
     recurrente BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -2823,14 +5468,532 @@ CREATE TABLE admisiones (
     FOREIGN KEY (carrera_id) REFERENCES carreras(id)
 );
 
+-- 18. Tabla de Preguntas del Simulacro
+CREATE TABLE preguntas_simulacro (
+    id BIGSERIAL PRIMARY KEY,
+    materia_id BIGINT NOT NULL,
+    enunciado TEXT NOT NULL,
+    opciones TEXT NOT NULL, -- Almacenado como JSON en formato texto
+    respuesta_correcta VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (materia_id) REFERENCES materias(id) ON DELETE CASCADE
+);
+
 -- Índices de Optimización de Consultas (Performance)
 CREATE INDEX idx_postulantes_ci ON postulantes(ci);
 CREATE INDEX idx_postulantes_estado ON postulantes(estado);
+CREATE INDEX idx_postulantes_primera_opcion ON postulantes(primera_opcion_id);
+CREATE INDEX idx_postulantes_segunda_opcion ON postulantes(segunda_opcion_id);
 CREATE INDEX idx_examenes_postulante ON examenes(postulante_id);
 CREATE INDEX idx_notas_finales_postulante ON notas_finales(postulante_id);
 CREATE INDEX idx_asignaciones_grupo_postulante ON asignaciones_grupo(postulante_id);
+CREATE INDEX idx_preguntas_simulacro_materia ON preguntas_simulacro(materia_id);
 
 COMMIT;
+```
+
+## Población de Datos (Script de Inserción SQL)
+
+El siguiente script inserta datos coherentes y robustos en las 18 tablas diseñadas para simular el proceso de preinscripción, verificación, pago de matrícula, planificación grupal, evaluación y admisión del CUP:
+
+```sql
+-- POBLACIÓN DE DATOS DE PRUEBA (inserts consistentes)
+BEGIN;
+
+-- 1. Tabla de Usuarios
+INSERT INTO users (name, email, password, role, active) VALUES
+('Juan Perez', 'juan.perez@ficct.uagrm.edu.bo', '$2y$12$eImiTx..AdminHash', 'Administrador', TRUE),
+('Ana Gomez', 'ana.gomez@ficct.uagrm.edu.bo', '$2y$12$eImiTx..CoordHash', 'Coordinador', TRUE),
+('Carlos Mendez', 'carlos.mendez@ficct.uagrm.edu.bo', '$2y$12$eImiTx..DocHash', 'Docente', TRUE),
+('Elena Salvatierra', 'elena.salvatierra@ficct.uagrm.edu.bo', '$2y$12$eImiTx..Doc2Hash', 'Docente', TRUE),
+('Maria Lopez', 'maria.lopez@gmail.com', '$2y$12$eImiTx..PostHash', 'Postulante', TRUE);
+
+-- 2. Tabla de Bitácora de Accesos
+INSERT INTO bitacora_accesos (user_id, ip_address, action) VALUES
+(1, '192.168.1.10', 'Inicio de sesión exitoso - Administrador'),
+(2, '192.168.1.15', 'Configuración de cupos de la gestión 1-2026'),
+(3, '192.168.1.20', 'Registro de notas del grupo 1 - Matemáticas'),
+(1, '192.168.1.10', 'Inicio de sesión fallido - Credenciales incorrectas');
+
+-- 3. Tabla de Gestiones Académicas
+INSERT INTO gestiones (codigo, activa, fecha_inicio, fecha_fin) VALUES
+('1-2026', TRUE, '2026-02-01', '2026-06-30'),
+('2-2026', FALSE, '2026-08-01', '2026-12-31');
+
+-- 4. Tabla de Carreras de la FICCT
+INSERT INTO carreras (nombre, codigo) VALUES
+('Ingeniería Informática', '187-3'),
+('Ingeniería de Sistemas', '187-4'),
+('Ingeniería en Redes y Telecomunicaciones', '187-5');
+
+-- 5. Tabla de Cupos por Gestión y Carrera
+INSERT INTO cupos_gestion (gestion_id, carrera_id, cupo_maximo, cupos_disponibles) VALUES
+(1, 1, 80, 78), -- 2 cupos usados
+(1, 2, 60, 60),
+(1, 3, 50, 50);
+
+-- 6. Tabla de Postulantes
+INSERT INTO postulantes (ci, nombres, apellidos, fecha_nacimiento, sexo, email, primera_opcion_id, segunda_opcion_id, turno_preferencia, gestion_id, estado, recurrente) VALUES
+('10203040', 'Maria', 'Lopez', '2007-05-15', 'F', 'maria.lopez@gmail.com', 1, 2, 'Mañana', 1, 'Aprobado', FALSE),
+('50607080', 'Pedro', 'Ramirez', '2006-11-20', 'M', 'pedro.ramirez@hotmail.com', 2, 1, 'Tarde', 1, 'Reprobado', FALSE),
+('90102030', 'Sofía', 'Espinoza', '2007-01-10', 'F', 'sofia.espinoza@outlook.com', 1, 3, 'Mañana', 1, 'Aprobado', TRUE),
+('40302010', 'Lucas', 'Torres', '2006-08-05', 'M', 'lucas.torres@gmail.com', 3, 2, 'Noche', 1, 'Preinscrito', FALSE);
+
+-- 7. Tabla de Requisitos Documentales
+INSERT INTO requisitos_documentales (postulante_id, ci_digitalizado, certificado_nacimiento, titulo_bachiller_legalizado, formulario_preinscripcion, verificado_bd_externa) VALUES
+(1, TRUE, TRUE, TRUE, TRUE, TRUE),
+(2, TRUE, TRUE, TRUE, TRUE, TRUE),
+(3, TRUE, TRUE, TRUE, TRUE, TRUE),
+(4, FALSE, FALSE, FALSE, FALSE, FALSE);
+
+-- 8. Tabla de Pagos
+INSERT INTO pagos (postulante_id, stripe_checkout_id, monto, estado_pago) VALUES
+(1, 'cs_test_A1B2C3D4', 350.00, 'Succeeded'),
+(2, 'cs_test_E5F6G7H8', 350.00, 'Succeeded'),
+(3, 'cs_test_I9J0K1L2', 350.00, 'Succeeded');
+
+-- 9. Tabla de Materias
+INSERT INTO materias (nombre, codigo) VALUES
+('Computación', 'COM-101'),
+('Matemáticas', 'MAT-101'),
+('Inglés', 'ING-101'),
+('Física', 'FIS-101');
+
+-- 10. Tabla de Aulas
+INSERT INTO aulas (nombre, capacidad, ubicacion) VALUES
+('Aula 101', 75, 'Módulo 236 - Planta Alta'),
+('Aula 102', 80, 'Módulo 236 - Planta Alta'),
+('Laboratorio 1', 40, 'Módulo 236 - Planta Baja');
+
+-- 11. Tabla de Grupos Habilitados
+INSERT INTO grupos (numero, gestion_id, turno, aula_id) VALUES
+(1, 1, 'Mañana', 1),
+(2, 1, 'Tarde', 2),
+(3, 1, 'Noche', 1);
+
+-- 12. Tabla de Asignaciones de Postulantes a Grupos
+INSERT INTO asignaciones_grupo (postulante_id, grupo_id) VALUES
+(1, 1),
+(2, 2),
+(3, 1);
+
+-- 13. Tabla de Docentes
+INSERT INTO docentes (ci, nombres, apellidos, especialidad, grado_academico, correo) VALUES
+('20304050', 'Carlos', 'Mendez', 'Matemáticas', 'Maestría en Educación Superior', 'carlos.mendez@ficct.uagrm.edu.bo'),
+('80706050', 'Elena', 'Salvatierra', 'Física', 'Diplomado en Ciencias Exactas', 'elena.salvatierra@ficct.uagrm.edu.bo'),
+('11223344', 'Roberto', 'Camacho', 'Computación', 'Maestría en Ciencias de la Computación', 'roberto.camacho@ficct.uagrm.edu.bo');
+
+-- 14. Tabla de Asignaciones de Docentes a Grupos y Materias
+INSERT INTO asignaciones_docente (docente_id, grupo_id, materia_id) VALUES
+(3, 1, 1), -- Camacho asignado a Computación en Grupo 1
+(1, 1, 2), -- Mendez asignado a Matemáticas en Grupo 1
+(2, 1, 4), -- Salvatierra asignada a Física en Grupo 1
+(1, 2, 2); -- Mendez asignado a Matemáticas en Grupo 2
+
+-- 15. Tabla de Exámenes Individuales
+INSERT INTO examenes (postulante_id, materia_id, numero_examen, nota) VALUES
+-- Postulante 1 (Maria) - Aprobado
+(1, 1, 1, 85.00), (1, 1, 2, 90.00), (1, 1, 3, 95.00),
+(1, 2, 1, 70.00), (1, 2, 2, 80.00), (1, 2, 3, 85.00),
+(1, 3, 1, 90.00), (1, 3, 2, 85.00), (1, 3, 3, 90.00),
+(1, 4, 1, 80.00), (1, 4, 2, 85.00), (1, 4, 3, 90.00),
+-- Postulante 2 (Pedro) - Reprobado en Física
+(2, 1, 1, 60.00), (2, 1, 2, 65.00), (2, 1, 3, 70.00),
+(2, 2, 1, 40.00), (2, 2, 2, 50.00), (2, 2, 3, 55.00), -- Reprobó Física
+(2, 3, 1, 75.00), (2, 3, 2, 80.00), (2, 3, 3, 85.00),
+(2, 4, 1, 70.00), (2, 4, 2, 75.00), (2, 4, 3, 80.00),
+-- Postulante 3 (Sofia) - Aprobada
+(3, 1, 1, 65.00), (3, 1, 2, 70.00), (3, 1, 3, 75.00),
+(3, 2, 1, 60.00), (3, 2, 2, 62.00), (3, 2, 3, 65.00),
+(3, 3, 1, 80.00), (3, 3, 2, 85.00), (3, 3, 3, 88.00),
+(3, 4, 1, 70.00), (3, 4, 2, 75.00), (3, 4, 3, 80.00);
+
+-- 16. Tabla de Notas Finales Consolidadas por Materia
+INSERT INTO notas_finales (postulante_id, materia_id, promedio, estado) VALUES
+(1, 1, 90.50, 'APROBADO'),
+(1, 2, 79.50, 'APROBADO'),
+(1, 3, 88.00, 'APROBADO'),
+(1, 4, 85.50, 'APROBADO'),
+(2, 1, 65.50, 'APROBADO'),
+(2, 2, 49.50, 'REPROBADO'),
+(2, 3, 80.50, 'APROBADO'),
+(2, 4, 75.50, 'APROBADO'),
+(3, 1, 70.50, 'APROBADO'),
+(3, 2, 62.60, 'APROBADO'),
+(3, 3, 84.70, 'APROBADO'),
+(3, 4, 75.50, 'APROBADO');
+
+-- 17. Tabla de Admisiones (Asignación Definitiva de Carreras)
+INSERT INTO admisiones (postulante_id, carrera_id, via) VALUES
+(1, 1, '1ra Opción'),
+(3, 1, '1ra Opción');
+
+-- 18. Tabla de Preguntas del Simulacro
+INSERT INTO preguntas_simulacro (materia_id, enunciado, opciones, respuesta_correcta) VALUES
+(1, '¿Qué es un algoritmo?', '{"A":"Un lenguaje","B":"Secuencia finita de pasos ordenados","C":"Una variable","D":"Un bucle"}', 'B'),
+(1, '¿Cuál es la complejidad temporal de búsqueda binaria?', '{"A":"O(n)","B":"O(log n)","C":"O(n log n)","D":"O(1)"}', 'B'),
+(2, '¿Cuál es la derivada de x^2?', '{"A":"x","B":"2x","C":"x^2","D":"1"}', 'B'),
+(2, '¿Cuál es el valor de la integral de 1/x dx?', '{"A":"x","B":"ln|x| + C","C":"1/x^2","D":"e^x"}', 'B'),
+(3, '¿Qué significa la palabra "Software"?', '{"A":"Parte dura","B":"Parte lógica y programas","C":"Dispositivo móvil","D":"CPU"}', 'B'),
+(4, '¿Qué fuerza se opone al movimiento relativo de superficies en contacto?', '{"A":"Fuerza normal","B":"Fuerza de fricción","C":"Gravedad","D":"Fuerza centrípeta"}', 'B');
+
+COMMIT;
+```
+
+## Consultas SQL Analíticas e Inteligencia de Negocio
+
+A continuación, se detalla un compendio completo de **30 consultas complejas SQL** diseñadas bajo el estándar PostgreSQL 16/18. Estas consultas proveen a la FICCT de un sistema robusto de análisis y control académico de admisiones:
+
+### 1. Auditoría: Usuarios activos y conteo de accesos registrados
+Permite monitorear la actividad de los usuarios en el sistema, ordenándolos por el nivel de interacción reflejado en la bitácora:
+```sql
+SELECT u.id, u.name, u.role, COUNT(b.id) AS total_accesos
+FROM users u
+LEFT JOIN bitacora_accesos b ON u.id = b.user_id
+GROUP BY u.id, u.name, u.role
+ORDER BY total_accesos DESC;
+```
+
+### 2. Auditoría: Conteo de acciones fallidas en bitácora
+Ayuda a detectar posibles vulnerabilidades o intentos de intrusión no autorizados en el sistema de autenticación:
+```sql
+SELECT user_id, ip_address, COUNT(*) AS total_intentos_fallidos
+FROM bitacora_accesos
+WHERE action LIKE '%fallido%' OR action LIKE '%incorrecta%'
+GROUP BY user_id, ip_address
+ORDER BY total_intentos_fallidos DESC;
+```
+
+### 3. Registro: Capacidad máxima y cupos disponibles de carreras por gestión activa
+Genera un reporte gerencial rápido sobre la ocupación y vacantes en cada carrera de la facultad en la gestión vigente:
+```sql
+SELECT g.codigo AS gestion, c.nombre AS carrera, cg.cupo_maximo, cg.cupos_disponibles
+FROM cupos_gestion cg
+JOIN gestiones g ON cg.gestion_id = g.id
+JOIN carreras c ON cg.carrera_id = c.id
+WHERE g.activa = TRUE;
+```
+
+### 4. Registro: Reporte detallado de preinscripciones
+Muestra la lista de todos los postulantes con su información básica, su primera opción y su estado de trámite:
+```sql
+SELECT p.ci, p.nombres, p.apellidos, c1.nombre AS primera_opcion, p.turno_preferencia, p.estado
+FROM postulantes p
+JOIN carreras c1 ON p.primera_opcion_id = c1.id
+ORDER BY p.apellidos, p.nombres;
+```
+
+### 5. Control Documental: Postulantes que aprobaron SEGIP/SEDUCA pero les faltan documentos físicos
+Útil para que el departamento de admisiones notifique a los alumnos que están validados externamente pero no han entregado su documentación en físico:
+```sql
+SELECT p.ci, p.nombres, p.apellidos, p.email
+FROM postulantes p
+JOIN requisitos_documentales r ON p.id = r.postulante_id
+WHERE r.verificado_bd_externa = TRUE 
+  AND (r.ci_digitalizado = FALSE OR r.certificado_nacimiento = FALSE OR r.titulo_bachiller_legalizado = FALSE);
+```
+
+### 6. Control Documental: Tasa de cumplimiento de requisitos documentales por colegio de procedencia
+Identifica los colegios de origen cuyos bachilleres muestran mayor o menor tasa de regularización documental en el CUP:
+```sql
+SELECT p.colegio_procedencia, 
+       COUNT(*) AS total_postulantes,
+       SUM(CASE WHEN r.verificado_bd_externa = TRUE AND r.ci_digitalizado = TRUE AND r.titulo_bachiller_legalizado = TRUE THEN 1 ELSE 0 END) AS requisitos_completos
+FROM postulantes p
+JOIN requisitos_documentales r ON p.id = r.postulante_id
+GROUP BY p.colegio_procedencia
+ORDER BY total_postulantes DESC;
+```
+
+### 7. Finanzas: Total recaudado en caja por concepto de matrícula exitosa
+Calcula el ingreso total real a las cuentas de la universidad mediante transacciones confirmadas por Stripe:
+```sql
+SELECT estado_pago, SUM(monto) AS total_recaudado, COUNT(*) AS cantidad_transacciones
+FROM pagos
+GROUP BY estado_pago;
+```
+
+### 8. Finanzas: Alumnos que pagaron pero no tienen grupo asignado
+Alerta crítica para coordinadores sobre fallos de distribución, identificando postulantes inscritos y solventados que aún no figuran en ninguna lista de aula:
+```sql
+SELECT p.ci, p.nombres, p.apellidos, p.email, pa.monto
+FROM postulantes p
+JOIN pagos pa ON p.id = pa.postulante_id
+LEFT JOIN asignaciones_grupo ag ON p.id = ag.postulante_id
+WHERE pa.estado_pago = 'Succeeded' AND ag.id IS NULL;
+```
+
+### 9. Académico: Boletín completo de notas parciales de un postulante en las 4 materias
+Obtiene el desglose detallado de los tres exámenes y su correspondiente nota para un alumno específico:
+```sql
+SELECT m.nombre AS materia,
+       MAX(CASE WHEN e.numero_examen = 1 THEN e.nota ELSE NULL END) AS parcial_1,
+       MAX(CASE WHEN e.numero_examen = 2 THEN e.nota ELSE NULL END) AS parcial_2,
+       MAX(CASE WHEN e.numero_examen = 3 THEN e.nota ELSE NULL END) AS parcial_3
+FROM examenes e
+JOIN materias m ON e.materia_id = m.id
+WHERE e.postulante_id = 1
+GROUP BY m.nombre;
+```
+
+### 10. Académico: Promedios consolidados por materia para un grupo determinado
+Permite a los docentes de una asignatura ver las notas finales y estados de sus estudiantes asignados en un grupo académico específico:
+```sql
+SELECT p.ci, p.nombres, p.apellidos, m.nombre AS materia, nf.promedio, nf.estado
+FROM notas_finales nf
+JOIN postulantes p ON nf.postulante_id = p.id
+JOIN materias m ON nf.materia_id = m.id
+JOIN asignaciones_grupo ag ON p.id = ag.postulante_id
+WHERE ag.grupo_id = 1
+ORDER BY p.apellidos, p.nombres;
+```
+
+### 11. Académico: Postulantes con Aprobación Académica Global (promedio >= 60 en las 4 materias)
+Reporte de los alumnos que cumplieron estrictamente la condición inquebrantable de aprobar individualmente cada una de las 4 asignaturas obligatorias:
+```sql
+SELECT p.ci, p.nombres, p.apellidos, ROUND(AVG(nf.promedio), 2) AS promedio_general
+FROM postulantes p
+JOIN notas_finales nf ON p.id = nf.postulante_id
+GROUP BY p.id, p.ci, p.nombres, p.apellidos
+HAVING COUNT(nf.id) = 4 AND MIN(CASE WHEN nf.estado = 'APROBADO' THEN 1 ELSE 0 END) = 1
+ORDER BY promedio_general DESC;
+```
+
+### 12. Académico: Postulantes reprobados por una sola materia
+Identifica a los estudiantes que obtuvieron promedios altos globales pero reprobaron por no alcanzar la nota mínima de 60 en una sola materia en específico:
+```sql
+SELECT p.ci, p.nombres, p.apellidos, 
+       ROUND(AVG(nf.promedio), 2) AS promedio_general,
+       SUM(CASE WHEN nf.estado = 'REPROBADO' THEN 1 ELSE 0 END) AS materias_reprobadas
+FROM postulantes p
+JOIN notas_finales nf ON p.id = nf.postulante_id
+GROUP BY p.id, p.ci, p.nombres, p.apellidos
+HAVING SUM(CASE WHEN nf.estado = 'REPROBADO' THEN 1 ELSE 0 END) = 1;
+```
+
+### 13. Académico: Rendimiento promedio e índice de aprobación por grupo
+Compara el nivel de rendimiento académico de los diferentes grupos para verificar la homogeneidad de los turnos y aulas:
+```sql
+SELECT g.id AS grupo_id, g.turno,
+       ROUND(AVG(nf.promedio), 2) AS promedio_grupo,
+       ROUND(100.0 * SUM(CASE WHEN nf.estado = 'APROBADO' THEN 1 ELSE 0 END) / COUNT(nf.id), 2) AS tasa_aprobacion_porcentaje
+FROM notas_finales nf
+JOIN postulantes p ON nf.postulante_id = p.id
+JOIN asignaciones_grupo ag ON p.id = ag.postulante_id
+JOIN grupos g ON ag.grupo_id = g.id
+GROUP BY g.id, g.turno;
+```
+
+### 14. Infraestructura: Tasa de ocupación y estudiantes inscritos por aula y turno
+Reporte para el área de planificación que muestra la saturación del espacio físico comparado contra la capacidad nominal del aula:
+```sql
+SELECT a.nombre AS aula, a.capacidad AS capacidad_maxima, g.turno,
+       COUNT(ag.postulante_id) AS total_estudiantes,
+       ROUND(100.0 * COUNT(ag.postulante_id) / a.capacidad, 2) AS porcentaje_ocupacion
+FROM aulas a
+JOIN grupos g ON g.aula_id = a.id
+LEFT JOIN asignaciones_grupo ag ON ag.grupo_id = g.id
+GROUP BY a.id, a.nombre, a.capacidad, g.turno
+ORDER BY porcentaje_ocupacion DESC;
+```
+
+### 15. Infraestructura: Aulas disponibles con capacidad libre en el turno mañana
+Ayuda a los planificadores a ubicar en qué salones de clase del turno de la mañana se pueden inscribir más alumnos sin exceder límites:
+```sql
+SELECT a.nombre AS aula, a.capacidad, (a.capacidad - COUNT(ag.postulante_id)) AS vacantes_disponibles
+FROM aulas a
+JOIN grupos g ON g.aula_id = a.id
+LEFT JOIN asignaciones_grupo ag ON ag.grupo_id = g.id
+WHERE g.turno = 'Mañana'
+GROUP BY a.id, a.nombre, a.capacidad
+HAVING COUNT(ag.postulante_id) < a.capacidad;
+```
+
+### 16. Planificación: Docentes con carga docente máxima alcanzada (4 grupos asignados)
+Verifica que ningún docente supere el límite estatutario de asignación de carga de docencia en la gestión activa:
+```sql
+SELECT d.ci, d.nombres, d.apellidos, COUNT(ad.id) AS total_grupos_materia
+FROM docentes d
+JOIN asignaciones_docente ad ON d.id = ad.docente_id
+GROUP BY d.id, d.ci, d.nombres, d.apellidos
+HAVING COUNT(ad.id) >= 4;
+```
+
+### 17. Planificación: Materias y grupos sin docente asignado
+Control preventivo para coordinadores que detecta vacíos de cátedra antes de dar inicio formal a la gestión académica del CUP:
+```sql
+SELECT g.numero AS grupo, g.turno, m.nombre AS materia
+FROM grupos g
+CROSS JOIN materias m
+LEFT JOIN asignaciones_docente ad ON ad.grupo_id = g.id AND ad.materia_id = m.id
+WHERE ad.id IS NULL;
+```
+
+### 18. Admisión: Tasa de admisión definitiva por cada vía de ingreso
+Reporte del total de postulantes que ingresaron por primera opción, segunda opción, o por reasignación administrativa:
+```sql
+SELECT via, COUNT(*) AS total_admitidos,
+       ROUND(100.0 * COUNT(*) / (SELECT COUNT(*) FROM admisiones), 2) AS porcentaje_tasa
+FROM admisiones
+GROUP BY via;
+```
+
+### 19. Admisión: Ranking meritocrático de postulantes admitidos en Ingeniería Informática
+Genera la lista oficial y pública de admitidos por orden de promedio académico descendente:
+```sql
+SELECT RANK() OVER(ORDER BY AVG(nf.promedio) DESC) AS ranking,
+       p.ci, p.nombres, p.apellidos, 
+       ROUND(AVG(nf.promedio), 2) AS promedio_admision,
+       a.via
+FROM postulantes p
+JOIN admisiones a ON p.id = a.postulante_id
+JOIN notas_finales nf ON p.id = nf.postulante_id
+WHERE a.carrera_id = 1
+GROUP BY p.id, p.ci, p.nombres, p.apellidos, a.via
+ORDER BY promedio_admision DESC;
+```
+
+### 20. Admisión: Postulantes aprobados con cupos saturados
+Reporte de alumnos aprobados que por saturación de plazas en primera y segunda opción no pudieron ser admitidos de forma directa y requieren reasignación:
+```sql
+SELECT p.ci, p.nombres, p.apellidos, p.email, p.estado
+FROM postulantes p
+WHERE p.estado = 'Pendiente Reasignacion';
+```
+
+### 21. Simulacro: Banco de preguntas del simulacro categorizado por materia
+Permite auditar el inventario y calidad de las preguntas cargadas en el banco interactivo de práctica del postulante:
+```sql
+SELECT m.nombre AS materia, COUNT(ps.id) AS total_preguntas
+FROM materias m
+LEFT JOIN preguntas_simulacro ps ON ps.materia_id = m.id
+GROUP BY m.id, m.nombre;
+```
+
+### 22. Simulacro: Promedio e índice de aprobación general en exámenes de simulacro
+Estadística analítica sobre la efectividad de las prácticas del simulacro previas a la prueba oficial del CUP:
+```sql
+SELECT ps.enunciado,
+       COUNT(ps.id) AS veces_respondida,
+       ROUND(100.0 * SUM(CASE WHEN ps.respuesta_correcta = 'B' THEN 1 ELSE 0 END) / COUNT(ps.id), 2) AS porcentaje_acierto
+FROM preguntas_simulacro ps
+GROUP BY ps.id, ps.enunciado;
+```
+
+### 23. Avanzada (Pivot): Tasa de aprobación académica detallada por colegio de procedencia
+Una consulta que consolida el total de aprobados y reprobados globales por cada colegio secundario para identificar el rendimiento de las escuelas de origen:
+```sql
+SELECT colegio_procedencia,
+       SUM(CASE WHEN estado = 'Aprobado' THEN 1 ELSE 0 END) AS aprobados,
+       SUM(CASE WHEN estado = 'Reprobado' THEN 1 ELSE 0 END) AS reprobados,
+       COUNT(*) AS total_postulantes,
+       ROUND(100.0 * SUM(CASE WHEN estado = 'Aprobado' THEN 1 ELSE 0 END) / COUNT(*), 2) AS tasa_exito_porcentaje
+FROM postulantes
+WHERE estado IN ('Aprobado', 'Reprobado')
+GROUP BY colegio_procedencia
+ORDER BY tasa_exito_porcentaje DESC;
+```
+
+### 24. Avanzada (Análisis Temporal): Recaudación diaria y promedio móvil de pagos
+Permite al departamento de finanzas observar la tendencia diaria de inscripciones y pagos confirmados:
+```sql
+SELECT DATE(fecha_pago) AS fecha,
+       COUNT(*) AS pagos_dia,
+       SUM(monto) AS recaudacion_dia,
+       ROUND(AVG(SUM(monto)) OVER(ORDER BY DATE(fecha_pago) ROWS BETWEEN 2 PRECEDING AND CURRENT ROW), 2) AS promedio_movil_3dias
+FROM pagos
+WHERE estado_pago = 'Succeeded'
+GROUP BY DATE(fecha_pago)
+ORDER BY fecha;
+```
+
+### 25. Avanzada (Análisis de Cohortes): Tasa de aprobación de postulantes recurrentes vs nuevos
+Determina si los estudiantes con antecedentes de inscripción previa (recurrentes) tienen un mejor desempeño académico comparados con los postulantes de primer ingreso:
+```sql
+SELECT recurrente,
+       COUNT(*) AS total_estudiantes,
+       SUM(CASE WHEN estado = 'Aprobado' THEN 1 ELSE 0 END) AS aprobados,
+       ROUND(100.0 * SUM(CASE WHEN estado = 'Aprobado' THEN 1 ELSE 0 END) / COUNT(*), 2) AS tasa_aprobacion
+FROM postulantes
+WHERE estado IN ('Aprobado', 'Reprobado')
+GROUP BY recurrente;
+```
+
+### 26. Avanzada (Window Function): Los tres alumnos con mejor promedio final en cada grupo
+Genera un listado de honor identificando el podio de rendimiento académico segregado por grupo y turno:
+```sql
+WITH RankEstudiantes AS (
+    SELECT p.id, p.ci, p.nombres, p.apellidos, ag.grupo_id,
+           ROUND(AVG(nf.promedio), 2) AS promedio_general,
+           ROW_NUMBER() OVER(PARTITION BY ag.grupo_id ORDER BY AVG(nf.promedio) DESC) AS posicion
+    FROM postulantes p
+    JOIN notas_finales nf ON p.id = nf.postulante_id
+    JOIN asignaciones_grupo ag ON p.id = ag.postulante_id
+    GROUP BY p.id, p.ci, p.nombres, p.apellidos, ag.grupo_id
+)
+SELECT grupo_id, posicion, ci, nombres, apellidos, promedio_general
+FROM RankEstudiantes
+WHERE posicion <= 3
+ORDER BY grupo_id, posicion;
+```
+
+### 27. Avanzada (Estadística): Percentiles de rendimiento en notas consolidadas por materia
+Reporte estadístico avanzado que segmenta las calificaciones finales en percentiles para verificar la distribución y el nivel de exigencia de la prueba CUP:
+```sql
+SELECT m.nombre AS materia,
+       ROUND(percentile_cont(0.25) WITHIN GROUP (ORDER BY nf.promedio)::numeric, 2) AS percentil_25,
+       ROUND(percentile_cont(0.50) WITHIN GROUP (ORDER BY nf.promedio)::numeric, 2) AS percentil_50_mediana,
+       ROUND(percentile_cont(0.75) WITHIN GROUP (ORDER BY nf.promedio)::numeric, 2) AS percentil_75,
+       ROUND(percentile_cont(0.90) WITHIN GROUP (ORDER BY nf.promedio)::numeric, 2) AS percentil_90
+FROM notas_finales nf
+JOIN materias m ON nf.materia_id = m.id
+GROUP BY m.id, m.nombre;
+```
+
+### 28. Avanzada (CTE Alertas): Alerta de cupos críticos de carreras (menos del 15% disponible)
+Control inteligente que emite una alerta inmediata si los cupos remanentes de una carrera en la gestión vigente están a punto de agotarse:
+```sql
+WITH AlertasCupos AS (
+    SELECT c.nombre AS carrera, cg.cupo_maximo, cg.cupos_disponibles,
+           (100.0 * cg.cupos_disponibles / cg.cupo_maximo) AS porcentaje_libre
+    FROM cupos_gestion cg
+    JOIN carreras c ON cg.carrera_id = c.id
+    JOIN gestiones g ON cg.gestion_id = g.id
+    WHERE g.activa = TRUE
+)
+SELECT carrera, cupo_maximo, cupos_disponibles, ROUND(porcentaje_libre, 2) AS porcentaje_disponible_critico
+FROM AlertasCupos
+WHERE porcentaje_libre <= 15.00;
+```
+
+### 29. Avanzada (Mantenimiento): Consulta para depuración segura de registros antiguos de bitácora
+Un script de mantenimiento de base de datos para archivar o borrar registros de la bitácora que tengan más de 90 días de antigüedad, evitando sobrecarga física en el almacenamiento:
+```sql
+DELETE FROM bitacora_accesos
+WHERE created_at < CURRENT_TIMESTAMP - INTERVAL '90 days';
+```
+
+### 30. Avanzada (General): Reporte consolidado definitivo para registros universitarios (UAGRM)
+La consulta final de mayor valor técnico que integra múltiples joins para consolidar el reporte oficial de estudiantes admitidos en la FICCT, ordenados por carrera y mérito, listos para su matriculación definitiva en el sistema universitario integrado:
+```sql
+WITH PromediosPostulantes AS (
+    SELECT p.id, ROUND(AVG(nf.promedio), 2) AS promedio_general
+    FROM postulantes p
+    JOIN notas_finales nf ON p.id = nf.postulante_id
+    GROUP BY p.id
+)
+SELECT c.nombre AS carrera_admitida,
+       DENSE_RANK() OVER(PARTITION BY a.carrera_id ORDER BY pp.promedio_general DESC) AS merito_carrera,
+       p.ci AS cedula_identidad,
+       p.apellidos || ', ' || p.nombres AS postulante,
+       pp.promedio_general AS promedio_final_cup,
+       a.via AS via_admision,
+       a.fecha_admision AS fecha_registro
+FROM admisiones a
+JOIN postulantes p ON a.postulante_id = p.id
+JOIN carreras c ON a.carrera_id = c.id
+JOIN PromediosPostulantes pp ON p.id = pp.id
+ORDER BY carrera_admitida, merito_carrera;
 ```
 
 ---
@@ -2841,87 +6004,179 @@ El Flujo de Trabajo de la Implementación detalla la estructura física del proy
 
 ---
 
-## 7.1 Herramientas de Desarrollo
 
-Para la construcción del sistema se implementaron las siguientes tecnologías líderes en el mercado del desarrollo web profesional:
+## 7.1 Herramientas de Desarrollo de la Aplicación WEB
 
-*   **IDE y Workspace:** Visual Studio Code con extensiones de PHP, Laravel y React.
-*   **Entorno Local de Servidor:** PHP 8.4 y Composer 2.9 para la gestión de dependencias del backend Laravel.
-*   **Gestor de Paquetes de Interfaz:** Node.js v22 y npm v11 para la construcción y minificación de componentes React mediante Vite.
-*   **Base de Datos:** PostgreSQL 18 local para desarrollo y Supabase como instancia dedicada PostgreSQL en la nube.
-*   **Control de Versiones:** Git y GitHub para la colaboración asíncrona mediante ramas funcionales.
-*   **Pasarela de Pagos:** Stripe en entorno Test Sandbox para simular la confirmación asíncrona segura.
+Para la construcción física del Sistema Web del CUP de la FICCT, se seleccionaron e implementaron las siguientes tecnologías del entorno de desarrollo moderno. Estas tecnologías permiten implementar de forma fiel el diseño BCE y asegurar la robustez de los procesos transaccionales:
+
+*   **IDE y Workspace (Entorno de Trabajo Físico):** *Visual Studio Code v1.98* configurado como el centro unificado de edición. Cuenta con extensiones oficiales de desarrollo como *PHP Intelephense* para análisis estático, *Laravel Blade* para interfaces del lado del servidor, e integración nativa de sintaxis *ES6/React*. Bajo el enfoque de PUDS, esta herramienta permite el mapeo ágil y la refactorización rápida entre las clases de análisis lógico y sus respectivos componentes físicos del código fuente.
+*   **Entorno de Ejecución Backend y Servidor:** *PHP 8.4* como motor de ejecución principal del lado del servidor, optimizado para la compilación JIT (Just-In-Time) y tipado estricto. Esto garantiza que las clases de control e interfaces de comunicación se procesen con la mínima sobrecarga de memoria, satisfaciendo los requisitos de rendimiento no funcionales del sistema del CUP.
+*   **Gestión de Dependencias y Repositorios de Terceros (PUDS Packaging):** *Composer v2.9* para el backend de PHP y *npm v10.8* para el frontend de Javascript/React. En PUDS, la gestión de dependencias asegura la reproducibilidad del entorno de desarrollo a través de archivos de bloqueo físico (`composer.lock` y `package-lock.json`), permitiendo que todos los ingenieros de software trabajen sobre la misma línea base (baseline) y evitando divergencias en los artefactos compilados.
+*   **Framework Backend (Enforzador del Patrón BCE):** *Laravel 11* actuando como la infraestructura del subsistema backend. Es el encargado de implementar físicamente el enrutamiento seguro de peticiones, inyección de dependencias para los controladores de control (`Control`), mediación de la lógica del negocio mediante servicios dedicados, mapeo relacional de objetos de persistencia a través de Eloquent ORM (`Entidad`), y el cumplimiento automático de la transaccionalidad ACID.
+*   **Framework Frontend (Capa de Presentación Reactiva):** *React 19* como biblioteca de renderizado declarativo para construir la Single Page Application (SPA), en conjunto con *Tailwind CSS* para una visualización premium y pulida del estudiante. Desde la perspectiva de PUDS, React gobierna las clases de frontera (`Frontera` o `Boundary`), transformándolas en componentes web encapsulados y reutilizables basados en estados reactivos.
+*   **Herramienta de Compilación y Ensamblado de Artefactos (Build System):** *Vite* configurado como el empaquetador ultrarrápido de última generación. En el flujo de trabajo de implementación de PUDS, realiza la transpilación de JSX a JS estándar, minificación de código, fragmentación de paquetes (code splitting) y carga en caliente en desarrollo (HMR), maximizando la eficiencia de carga de la interfaz de usuario.
+*   **Puente Arquitectónico de Comunicación:** *Inertia.js* actuando como el adaptador físico que unifica las capas de presentación y control de forma directa. Elimina la sobrecarga de mantener un sistema API REST complejo, permitiendo a los controladores Laravel inyectar estados y props directamente a las interfaces React sin recargas físicas del navegador, lo que aumenta la cohesión del diseño arquitectónico.
+*   **Gestor de Persistencia y Base de Datos:** *PostgreSQL 18* local en conjunto con *Supabase* como instancia en la nube de alta disponibilidad. Este motor de base de datos relacional robusto almacena físicamente el modelo relacional mapeado a partir del diagrama de clases de entidad de diseño. Garantiza la persistencia e integridad referencial por medio de constraints estrictas y almacenamiento indexado de alto rendimiento.
+*   **Herramientas de Control de Configuración y Control de Versiones (PUDS SCM):** *Git v2.45* integrado con *GitHub* como el sistema oficial para la Gestión de Configuración de Software. En PUDS, facilita el control riguroso de versiones, la trazabilidad de cada cambio en los artefactos físicos (código) respecto a los requerimientos, la definición de ramas de características (feature branching) y el establecimiento de líneas base (baselines) de versión estable correspondientes a cada fin de ciclo de iteración.
+*   **Entorno de Pruebas y Aseguramiento de la Calidad (PUDS QA Testing):** *PHPUnit 11* integrado en Laravel para la validación automática de las pruebas unitarias y de integración de la lógica de negocio académica (StripeService, AcademicoService, GruposService y AdmisionService), junto con *Vitest* para la validación de comportamiento de la interfaz React. Esto asegura que la calidad y estabilidad del software se verifiquen continuamente en cada iteración del ciclo de desarrollo antes del despliegue en producción.
+*   **APIs e Integraciones de Servicios Externos:**
+    *   *Stripe API Sandbox* para la confirmación transaccional segura y atómica de los pagos de inscripción.
+    *   *SEGIP API Mock Client* para la validación de la identidad nacional de los postulantes de forma automatizada y sin errores de captura.
+    *   *SEDUCA API Mock Client* para la autenticación en línea del título de bachiller de los estudiantes antes de habilitar su examen.
+    *   *OpenAI API (GPT-4o)* gobernando el procesamiento en lenguaje natural (NLP) del asistente interactivo inteligente y el procesamiento de comandos de voz administrativos.
 
 ---
 
 ## 7.2 Implementación de la Arquitectura del Sistema
 
-El diagrama de componentes detalla la estructuración del código en subsistemas modulares y la forma en que interactúan las capas lógicas del software:
+La estructura física del software se organiza en base a una **Arquitectura en Capas** que distribuye físicamente los componentes de la aplicación de acuerdo con su responsabilidad de negocio. El siguiente diagrama de componentes global ilustra la forma en que interactúan las capas físicas del sistema desde la interfaz de usuario React hasta el motor de persistencia PostgreSQL:
 
 ```plantuml
-@startuml ComponentesArquitectura
+@startuml ComponentesArquitecturaGlobal
 skinparam backgroundColor #FEFEFE
 skinparam componentStyle uml2
 skinparam roundCorner 8
+skinparam packageStyle rectangle
 
-package "React Frontend SPA" {
-  component "MainLayout" as LAY
-  component "ComponenteInscripcion" as COMP_Insc
-  component "ComponenteNotas" as COMP_Nota
-  component "ComponenteDashboard" as COMP_Dash
+package "React Frontend SPA (Capa de Presentación)" {
+  component "AppLayout.jsx" as LAY
+  component "Welcome.jsx" as COMP_Welc
+  component "Formulario.jsx" as COMP_Insc
+  component "Calificar.jsx" as COMP_Nota
+  component "CargaMasiva.jsx" as COMP_CSV
+  component "Dashboard.jsx" as COMP_Dash
 }
 
 package "Inertia Bridge" {
   interface "Inertia.js Protocol" as INER
 }
 
-package "Laravel Backend Application" {
-  component "WebRoutes" as ROUT
-  component "AuthController" as C_Auth
-  component "InscripcionController" as C_Insc
-  component "AcademicoController" as C_Acad
-  component "GruposController" as C_Grup
-  component "StripeService" as S_Stripe
-  component "GruposService" as S_Grup
-  component "EloquentModels" as MODS
+package "Laravel Backend Controller (Capa de Control)" {
+  component "WebRoutes (web.php)" as ROUT
+  component "LoginController.php" as C_Auth
+  component "InscripcionController.php" as C_Insc
+  component "AcademicoController.php" as C_Acad
+  component "GruposController.php" as C_Grup
+  component "AdmisionController.php" as C_Admi
 }
 
-database "PostgreSQL 18" as DB
+package "Laravel Business Services (Capa de Servicios)" {
+  component "StripeService.php" as S_Stripe
+  component "AcademicoService.php" as S_Acad
+  component "GruposService.php" as S_Grup
+  component "AdmisionService.php" as S_Admi
+  component "ReporteIAValidator.php" as S_IA
+}
 
-' Conexiones de componentes
+package "Eloquent ORM (Capa de Acceso a Datos)" {
+  component "User.php" as M_User
+  component "BitacoraAcceso.php" as M_Bita
+  component "Gestion.php" as M_Gest
+  component "Carrera.php" as M_Carr
+  component "CupoGestion.php" as M_Cupo
+  component "Postulante.php" as M_Post
+  component "RequisitoDocumental.php" as M_Req
+  component "Pago.php" as M_Pago
+  component "Materia.php" as M_Mate
+  component "Grupo.php" as M_Grup
+  component "Aula.php" as M_Aula
+  component "AsignacionGrupo.php" as M_AsigG
+  component "Docente.php" as M_Doc
+  component "AsignacionDocente.php" as M_AsigD
+  component "Examen.php" as M_Exam
+  component "NotaFinal.php" as M_Nota
+  component "PreguntaSimulacro.php" as M_Simu
+  component "Admision.php" as M_Admi
+}
+
+database "PostgreSQL 18 (Persistencia)" as DB
+
+' Relaciones de Presentación
 LAY ..> COMP_Insc
 LAY ..> COMP_Nota
+LAY ..> COMP_CSV
 LAY ..> COMP_Dash
 
+COMP_Welc --> INER
 COMP_Insc --> INER
 COMP_Nota --> INER
+COMP_CSV --> INER
 COMP_Dash --> INER
 
+' Relaciones con Capa Control
 INER ..> ROUT
 ROUT --> C_Auth
 ROUT --> C_Insc
 ROUT --> C_Acad
 ROUT --> C_Grup
+ROUT --> C_Admi
 
+' Control a Servicios
 C_Insc ..> S_Stripe
+C_Acad ..> S_Acad
 C_Grup ..> S_Grup
+C_Admi ..> S_Admi
+C_Admi ..> S_IA
 
-C_Auth ..> MODS
-C_Insc ..> MODS
-C_Acad ..> MODS
-C_Grup ..> MODS
+' Relación de Persistencia (Controladores y Servicios a Modelos)
+C_Auth ..> M_User
+C_Auth ..> M_Bita
+C_Insc ..> M_Post
+C_Insc ..> M_Req
+S_Stripe ..> M_Pago
+S_Acad ..> M_Exam
+S_Acad ..> M_Nota
+S_Acad ..> M_Mate
+S_Grup ..> M_Grup
+S_Grup ..> M_Gest
+S_Grup ..> M_Aula
+S_Grup ..> M_AsigG
+S_Admi ..> M_Post
+S_Admi ..> M_Admi
+S_Admi ..> M_Carr
+S_Admi ..> M_Cupo
+S_Admi ..> M_Simu
+C_Grup ..> M_Doc
+C_Grup ..> M_AsigD
+C_Grup ..> M_Mate
 
-MODS --> DB : SQL Queries
+' SQL Queries de Modelos a Base de Datos
+M_User --> DB : SQL Queries
+M_Bita --> DB : SQL Queries
+M_Gest --> DB : SQL Queries
+M_Carr --> DB : SQL Queries
+M_Cupo --> DB : SQL Queries
+M_Post --> DB : SQL Queries
+M_Req --> DB : SQL Queries
+M_Pago --> DB : SQL Queries
+M_Mate --> DB : SQL Queries
+M_Grup --> DB : SQL Queries
+M_Aula --> DB : SQL Queries
+M_AsigG --> DB : SQL Queries
+M_Doc --> DB : SQL Queries
+M_AsigD --> DB : SQL Queries
+M_Exam --> DB : SQL Queries
+M_Nota --> DB : SQL Queries
+M_Simu --> DB : SQL Queries
+M_Admi --> DB : SQL Queries
 @enduml
 ```
 
+### Descripción dinámica de la arquitectura global:
+*   **React Frontend SPA:** Aloja los componentes web dinámicos. Interactúan mediante la interfaz de Inertia.js para enviar y recibir datos en formato JSON de manera síncrona.
+*   **Inertia Bridge:** Actúa como el túnel middleware. Resuelve las peticiones enviando las llamadas al enrutador principal de Laravel y cargando de vuelta los componentes React sin recargas completas del navegador.
+*   **Laravel Backend Controller:** Es el despachador de negocio. Recibe las llamadas físicas y delega la ejecución de algoritmos pesados o transaccionales a la Capa de Servicios.
+*   **Laravel Business Services:** Contiene los algoritmos críticos académicos y transacciones financieras (Stripe, SEGIP, distribución equitativa y cálculo meritocrático).
+*   **Eloquent ORM:** Modela en clases orientadas a objetos las 18 tablas relacionales del sistema, gobernando de manera segura las propiedades ACID antes de impactar el motor.
+*   **PostgreSQL 18:** Motor físico que persiste los datos estructurados aplicando restricciones de llaves foráneas y checks relacionales rápidos.
+
 ---
 
-## 7.3 Implementación de Subsistemas (Código y Algoritmos)
+## 7.3 Implementación de la Arquitectura de Subsistemas
 
-### Estructura de Directorios del Proyecto (Laravel + React + Inertia)
+### Estructura de Directorios Física del Proyecto (Laravel + React + Inertia)
 
-A continuación se muestra la arquitectura física de archivos implementada en la raíz del proyecto `cup-system`:
+Para comprender la distribución y empaquetamiento del software en archivos del sistema de archivos real (`cup-system`), se muestra el árbol de directorios físico a continuación:
 
 ```
 cup-system/
@@ -2929,356 +6184,242 @@ cup-system/
 │   ├── Http/
 │   │   ├── Controllers/
 │   │   │   ├── Auth/
-│   │   │   │   └── LoginController.php          ← Login, logout y bitácora
-│   │   │   ├── InscripcionController.php       ← Registro, checklist y checkout Stripe
-│   │   │   ├── AcademicoController.php         ← Registro manual y masivo de notas
-│   │   │   ├── GruposController.php            ← Algoritmo automático de grupos
-│   │   │   └── AdmisionController.php          ← Algoritmo masivo de asignación de carreras
+│   │   │   │   └── LoginController.php          ← Login, logout y bitácora física
+│   │   │   ├── InscripcionController.php       ← Preinscripción, checklist y Stripe
+│   │   │   ├── AcademicoController.php         ← Carga de notas manual y masiva CSV
+│   │   │   ├── GruposController.php            ← Invocación de distribución de grupos
+│   │   │   └── AdmisionController.php          ← Algoritmo de asignación de carreras
 │   │   └── Middleware/
-│   │       └── VerifyRole.php                  ← Middleware estricto RBAC
+│   │       └── VerifyRole.php                  ← Interceptador y validador de roles RBAC
 │   ├── Models/
-│   │   ├── User.php
-│   │   ├── Postulante.php                      ← Scope y lógica de estado del postulante
-│   │   ├── Examen.php
-│   │   ├── Grupo.php
-│   │   └── Pago.php
+│   │   ├── User.php                            ← Mapeo físico de tabla users
+│   │   ├── Postulante.php                      ← Lógica de estados y datos del estudiante
+│   │   ├── Examen.php                          ← Mapeo físico de notas de 3 exámenes
+│   │   ├── Grupo.php                           ← Mapeo físico de grupos de aula
+│   │   ├── Pago.php                            ← Mapeo físico de transacciones Stripe
+│   │   ├── NotaFinal.php                       ← Mapeo físico de promedios ponderados
+│   │   └── PreguntaSimulacro.php               ← Banco de preguntas del simulacro
 │   └── Services/
-│       ├── StripeService.php                   ← Integración de Stripe APIs
-│       └── ReporteIAValidator.php              ← Procesador NLP básico de comandos de voz
+│       ├── StripeService.php                   ← Integración de Checkout y Webhooks Stripe
+│       ├── AcademicoService.php                ← Algoritmo de cálculo promedio (>=60 en c/u)
+│       ├── GruposService.php                   ← Algoritmo de grupos equitativos (CEIL(Total/70))
+│       ├── AdmisionService.php                 ← Algoritmo meritocrático de cupos por carrera
+│       └── ReporteIAValidator.php              ← Procesamiento NLP de comandos de voz IA
 ├── database/
-│   ├── migrations/                             ← Creación de las 16 tablas del sistema
+│   ├── migrations/                             ← Creación física de las 18 tablas en PostgreSQL
 │   └── seeders/
-│       └── DatabaseSeeder.php                  ← Carga masiva de prueba (1000 estudiantes)
+│       └── DatabaseSeeder.php                  ← Carga masiva automatizada de prueba
 ├── resources/
 │   └── js/
-│       ├── Components/                         ← Componentes reutilizables UI
+│       ├── Components/                         ← Componentes UI reutilizables React
 │       ├── Layouts/
-│       │   └── AppLayout.jsx                   ← Barra lateral con Dashboard, links y centro notificaciones
+│       │   └── AppLayout.jsx                   ← Barra lateral con enlaces y notificaciones
 │       ├── Pages/
-│       │   ├── Welcome.jsx                     ← Página de registro y chatbot flotante IA
+│       │   ├── Welcome.jsx                     ← Página de simulacro y chatbot IA
 │       │   ├── Inscripcion/
-│       │   │   └── Formulario.jsx              ← Formulario React con validaciones
+│       │   │   └── Formulario.jsx              ← Formulario React de registro
 │       │   ├── Academico/
-│       │   │   ├── Calificar.jsx               ← Grilla reactiva editable para notas
-│       │   │   └── CargaMasiva.jsx             ← Formulario de subida de CSV con logs de error
-│       │   └── Dashboard.jsx                   ← KPI cards + Gráficos Chart.js
-│       └── app.jsx                             ← Bootstrap de la app React/Inertia
+│       │   │   ├── Calificar.jsx               ← Grilla editable reactiva para notas
+│       │   │   └── CargaMasiva.jsx             ← Formulario de subida de CSV
+│       │   └── Dashboard.jsx                   ← Gráficos Chart.js KPIs
+│       └── app.jsx                             ← Bootstrap de la app frontend React
 ├── routes/
 │   ├── api.php                                 ← Webhook Stripe (exento de CSRF)
-│   └── web.php                                 ← Rutas de administración protegidas por Middleware
-└── .env.example                                ← Configuración de entorno con Stripe keys
+│   └── web.php                                 ← Rutas de administración protegidas por VerifyRole
+└── .env.example                                ← Configuración de entorno local
 ```
 
 ---
 
-### Algoritmos Críticos de Negocio Académico
+### Diagramas de Componentes por Subsistema (Mapeo de Paquetes en PUDS)
 
-A continuación se detalla la implementación exacta en código PHP limpio y profesional de los tres algoritmos clave que rigen el negocio del CUP de la FICCT:
+Siguiendo el flujo del Proceso Unificado (PUDS), a continuación se presentan los diagramas de componentes detallados de cada uno de los subsistemas y paquetes que componen la arquitectura base e inscripciones (Ciclo 1) y el procesamiento masivo (Ciclo 2):
 
-#### 1. Cálculo de Promedios y Verificación Académica Estricta
+#### 1. Subsistema de Autenticación, Seguridad y Auditoría (`Paquete_Autenticacion`)
+Este subsistema gobierna el control de accesos a la plataforma, aplicando restricciones RBAC a nivel de archivos físicos y registrando cada inicio de sesión en la bitácora física:
 
-Este algoritmo calcula la nota ponderada por materia `30% Ex1 + 30% Ex2 + 40% Ex3`. Aplica de forma sistémica la regla inquebrantable de que el postulante debe obtener **nota >= 60 en CADA materia evaluada individualmente** para ser calificado globalmente como **APROBADO**. Si reprueba una materia (aunque su promedio global sea 99), es catalogado como **REPROBADO**.
+```plantuml
+@startuml ComponentesAutenticacion
+skinparam backgroundColor #FEFEFE
+skinparam componentStyle uml2
+skinparam roundCorner 8
 
-```php
-<?php
-
-namespace App\Services;
-
-use App\Models\Postulante;
-use App\Models\NotaFinal;
-use App\Models\Examen;
-use Illuminate\Support\Facades\DB;
-
-class AcademicoService
-{
-    /**
-     * Calcula la nota final ponderada por materia para un postulante y determina
-     * su estado de aprobación general.
-     *
-     * @param int $postulanteId
-     * @return array
-     */
-    public function procesarEvaluacionPostulante(int $postulanteId): array
-    {
-        return DB::transaction(function () use ($postulanteId) {
-            $postulante = Postulante::findOrFail($postulanteId);
-            
-            // Las 4 materias obligatorias de la FICCT
-            $materias = DB::table('materias')->get();
-            $aprobóTodasLasMaterias = true;
-            $acumuladoMateriasValidas = 0;
-            
-            foreach ($materias as $materia) {
-                // Obtener los 3 exámenes del postulante en esta materia
-                $notas = Examen::where('postulante_id', $postulanteId)
-                    ->where('materia_id', $materia->id)
-                    ->orderBy('numero_examen')
-                    ->pluck('nota')
-                    ->toArray();
-                
-                // Si faltan exámenes, se completan las notas faltantes con 0
-                $n1 = $notas[0] ?? 0;
-                $n2 = $notas[1] ?? 0;
-                $n3 = $notas[2] ?? 0;
-                
-                // Ponderación oficial: 30%, 30%, 40%
-                $promedioMateria = round(($n1 * 0.30) + ($n2 * 0.30) + ($n3 * 0.40), 2);
-                
-                // Regla de Negocio: Cada materia se aprueba individualmente con >= 60
-                $estadoMateria = ($promedioMateria >= 60.00) ? 'APROBADO' : 'REPROBADO';
-                
-                if ($estadoMateria === 'REPROBADO') {
-                    $aprobóTodasLasMaterias = false;
-                }
-                
-                // Persistir el resultado consolidado de la materia
-                NotaFinal::updateOrCreate(
-                    [
-                        'postulante_id' => $postulanteId,
-                        'materia_id' => $materia->id
-                    ],
-                    [
-                        'promedio' => $promedioMateria,
-                        'estado' => $estadoMateria
-                    ]
-                );
-                
-                $acumuladoMateriasValidas++;
-            }
-            
-            // Determinación del Estado Académico Global del Postulante
-            // Si el checklist no tiene las 4 materias cargadas, queda en evaluación
-            if ($acumuladoMateriasValidas < 4) {
-                $estadoGlobal = 'En Evaluacion';
-            } else {
-                $estadoGlobal = $aprobóTodasLasMaterias ? 'Aprobado' : 'Reprobado';
-            }
-            
-            $postulante->estado = $estadoGlobal;
-            $postulante->save();
-            
-            return [
-                'postulante_id' => $postulanteId,
-                'estado_global' => $estadoGlobal,
-                'aprobado' => $aprobóTodasLasMaterias
-            ];
-        });
-    }
+package "React Frontend (UI)" {
+  component "Welcome.jsx" as UI_Welcome
 }
+
+package "Laravel Middleware (Security)" {
+  component "VerifyRole.php" as MID_Role
+}
+
+package "Laravel Controllers" {
+  component "LoginController.php" as C_Login
+}
+
+package "Eloquent ORM (Data)" {
+  component "User.php" as M_User
+}
+
+database "PostgreSQL 18" {
+  [users] as T_Users
+  [bitacora_accesos] as T_Bitacora
+}
+
+' Flujo de dependencias
+UI_Welcome ..> MID_Role : Petición de acceso
+MID_Role ..> C_Login : Redirección / Filtrado
+C_Login ..> M_User : Consulta de credenciales
+M_User --> T_Users : SELECT / UPDATE
+C_Login --> T_Bitacora : INSERT (Registrar Auditoría)
+@enduml
 ```
 
----
+#### 2. Subsistema de Registro de Postulantes, Validaciones y Stripe (`Paquete_Registro_Postulantes`)
+Este subsistema gobierna el ciclo de preinscripción de bachilleres, la validación documental SEGIP/SEDUCA automática, y el procesamiento de pagos integrando la pasarela física Stripe:
 
-#### 2. Algoritmo de Cálculo Automático y Distribución Equitativa de Grupos
+```plantuml
+@startuml ComponentesRegistroPostulantes
+skinparam backgroundColor #FEFEFE
+skinparam componentStyle uml2
+skinparam roundCorner 8
 
-El algoritmo realiza una distribución de estudiantes inscritos y pagados. Calcula la cantidad exacta de grupos requeridos por cada turno basándose en la cota superior estricta de **70 estudiantes por grupo** (usando la función techo `CEIL(Total / 70)`). Distribuye equitativamente a los alumnos en su turno preferido, impidiendo saturación en aulas.
-
-```php
-<?php
-
-namespace App\Services;
-
-use App\Models\Postulante;
-use App\Models\Grupo;
-use Illuminate\Support\Facades\DB;
-
-class GruposService
-{
-    /**
-     * Calcula la cantidad de grupos necesarios por turno y distribuye
-     * equitativamente a los alumnos inscritos que no tengan grupo asignado.
-     *
-     * @param int $gestionId
-     * @return array
-     */
-    public function ejecutarDistribucionGrupos(int $gestionId): array
-    {
-        return DB::transaction(function () use ($gestionId) {
-            $turnos = ['Mañana', 'Tarde', 'Noche'];
-            $resumen = [];
-            
-            // Obtener aulas disponibles en la gestión para asignar
-            $aulas = DB::table('aulas')->orderBy('capacidad', 'desc')->get();
-            if ($aulas->isEmpty()) {
-                throw new \Exception("Debe registrar aulas en el sistema antes de generar grupos.");
-            }
-            
-            foreach ($turnos as $turno) {
-                // Obtener postulantes inscritos y sin grupo en este turno
-                $postulantes = Postulante::where('gestion_id', $gestionId)
-                    ->where('estado', 'Inscrito')
-                    ->where('turno_preferencia', $turno)
-                    ->whereNotExists(function ($query) {
-                        $query->select(DB::raw(1))
-                            ->from('asignaciones_grupo')
-                            ->whereColumn('asignaciones_grupo.postulante_id', 'postulantes.id');
-                    })
-                    ->get();
-                
-                $totalInscritos = $postulantes->count();
-                if ($totalInscritos === 0) {
-                    continue;
-                }
-                
-                // Regla del Examen: 70 estudiantes máximo por grupo.
-                // Fórmula: CantidadGrupos = CEIL(Total / 70)
-                $cantidadGrupos = (int) ceil($totalInscritos / 70.0);
-                
-                // Generar los grupos físicos de la gestión
-                $gruposCreados = [];
-                for ($i = 1; $i <= $cantidadGrupos; $i++) {
-                    // Seleccionar un aula cíclicamente
-                    $aulaIndex = ($i - 1) % $aulas->count();
-                    $aula = $aulas[$aulaIndex];
-                    
-                    $grupo = Grupo::create([
-                        'numero' => $i,
-                        'gestion_id' => $gestionId,
-                        'turno' => $turno,
-                        'aula_id' => $aula->id
-                    ]);
-                    
-                    $gruposCreados[] = $grupo;
-                }
-                
-                // Distribución Equitativa: Para evitar que un grupo tenga 70 y otro 1,
-                // se distribuyen de forma secuencial round-robin
-                $postulantesArray = $postulantes->shuffle(); // Aleatoriedad de distribución
-                foreach ($postulantesArray as $index => $postulante) {
-                    $grupoAsignadoIndex = $index % $cantidadGrupos;
-                    $grupoAsignado = $gruposCreados[$grupoAsignadoIndex];
-                    
-                    DB::table('asignaciones_grupo')->insert([
-                        'postulante_id' => $postulante->id,
-                        'grupo_id' => $grupoAsignado->id,
-                        'created_at' => now()
-                    ]);
-                }
-                
-                $resumen[$turno] = [
-                    'alumnos_distribuidos' => $totalInscritos,
-                    'grupos_creados' => $cantidadGrupos,
-                    'promedio_por_grupo' => round($totalInscritos / $cantidadGrupos, 1)
-                ];
-            }
-            
-            return $resumen;
-        });
-    }
+package "React Frontend" {
+  component "Formulario.jsx" as UI_Form
 }
+
+package "Laravel Controllers" {
+  component "InscripcionController.php" as C_Insc
+}
+
+package "Laravel Services" {
+  component "StripeService.php" as S_Stripe
+}
+
+package "Eloquent Models" {
+  component "Postulante.php" as M_Post
+  component "Pago.php" as M_Pago
+}
+
+database "PostgreSQL 18" {
+  [postulantes] as T_Postulantes
+  [requisitos_documentales] as T_Requisitos
+  [pagos] as T_Pagos
+}
+
+interface "Stripe API Sandbox" as API_Stripe
+interface "API SEGIP" as API_Segip
+interface "API SEDUCA" as API_Seduca
+
+' Flujo de interacciones físicas
+UI_Form ..> C_Insc : Enviar datos preinscripción
+C_Insc ..> API_Segip : Validar CI
+C_Insc ..> API_Seduca : Validar Título Bachiller
+C_Insc ..> S_Stripe : Crear sesión de pago
+S_Stripe ..> API_Stripe : HTTPS Request
+C_Insc ..> M_Post : Guardar datos y requisitos
+C_Insc ..> M_Pago : Guardar transacción exitosa
+
+M_Post --> T_Postulantes
+M_Post --> T_Requisitos
+M_Pago --> T_Pagos
+@enduml
 ```
 
----
+#### 3. Subsistema de Planificación Académica y Distribución Grupal (`Paquete_Planificacion_Academica`)
+Este subsistema administra la infraestructura del CUP, orquestando el cálculo automático de grupos con un límite estricto de 70 personas por aula y asociándolos equitativamente:
 
-#### 3. Algoritmo de Asignación de Carreras por Cupo
+```plantuml
+@startuml ComponentesPlanificacionAcademica
+skinparam backgroundColor #FEFEFE
+skinparam componentStyle uml2
+skinparam roundCorner 8
 
-Ordena de forma determinista y meritocrática a todos los postulantes calificados como **APROBADO** en orden descendente de su promedio general. Intenta admitirlos en su primera opción de carrera; si esta se encuentra sin vacantes, ejecuta automáticamente la reasignación a su segunda opción. En caso de saturación total, los marca como pendientes para resolución manual del coordinador.
-
-```php
-<?php
-
-namespace App\Services;
-
-use App\Models\Postulante;
-use App\Models\CupoGestion;
-use Illuminate\Support\Facades\DB;
-
-class AdmisionService
-{
-    /**
-     * Ejecuta el algoritmo de asignación de carreras basado en rendimiento
-     * académico y límites estrictos de cupo por gestión.
-     *
-     * @param int $gestionId
-     * @return array
-     */
-    public function procesarAsignacionCarreras(int $gestionId): array
-    {
-        return DB::transaction(function () use ($gestionId) {
-            // Cargar los cupos configurados de la gestión en un array asociativo en memoria
-            // para evitar consultas repetitivas dentro del bucle
-            $cupos = CupoGestion::where('gestion_id', $gestionId)
-                ->lockForUpdate() // Previene condiciones de carrera concurrentes
-                ->get()
-                ->keyBy('carrera_id');
-                
-            if ($cupos->isEmpty()) {
-                throw new \Exception("Debe configurar los cupos de las carreras para la gestión seleccionada.");
-            }
-            
-            // Regla de Negocio: Obtener aprobados ordenados por promedio general descendente (Meritocracia)
-            // Promedio General = Suma(Nota final materia) / 4
-            $aprobados = Postulante::where('gestion_id', $gestionId)
-                ->where('estado', 'Aprobado')
-                ->select('postulantes.*')
-                ->join('notas_finales', 'notas_finales.postulante_id', '=', 'postulantes.id')
-                ->groupBy('postulantes.id')
-                ->selectRaw('ROUND(AVG(notas_finales.promedio), 2) as promedio_general')
-                ->orderBy('promedio_general', 'desc')
-                ->get();
-                
-            $resumen = [
-                'total_aprobados' => $aprobados->count(),
-                'admitidos_1ra_opcion' => 0,
-                'admitidos_2da_opcion' => 0,
-                'excedidos_cupo' => 0
-            ];
-            
-            foreach ($aprobados as $postulante) {
-                $primeraOp = $postulante->primera_opcion_id;
-                $segundaOp = $postulante->segunda_opcion_id;
-                
-                // Intento 1: Primera opción de carrera
-                if (isset($cupos[$primeraOp]) && $cupos[$primeraOp]->cupos_disponibles > 0) {
-                    // Admitir en primera opción
-                    DB::table('admisiones')->insert([
-                        'postulante_id' => $postulante->id,
-                        'carrera_id' => $primeraOp,
-                        'via' => '1ra Opción',
-                        'fecha_admision' => now()
-                    ]);
-                    
-                    $cupos[$primeraOp]->cupos_disponibles--;
-                    $cupos[$primeraOp]->save();
-                    
-                    $resumen['admitidos_1ra_opcion']++;
-                }
-                // Intento 2: Segunda opción de carrera
-                elseif (isset($cupos[$segundaOp]) && $cupos[$segundaOp]->cupos_disponibles > 0) {
-                    // Admitir en segunda opción
-                    DB::table('admisiones')->insert([
-                        'postulante_id' => $postulante->id,
-                        'carrera_id' => $segundaOp,
-                        'via' => '2da Opción',
-                        'fecha_admision' => now()
-                    ]);
-                    
-                    $cupos[$segundaOp]->cupos_disponibles--;
-                    $cupos[$segundaOp]->save();
-                    
-                    $resumen['admitidos_2da_opcion']++;
-                }
-                // Excepción: Cupos agotados en ambas opciones
-                else {
-                    $postulante->estado = 'Pendiente Reasignacion';
-                    $postulante->save();
-                    
-                    $resumen['excedidos_cupo']++;
-                    
-                    // Registrar alerta en bitácora de admisiones para el Coordinador
-                    DB::table('bitacora_accesos')->insert([
-                        'user_id' => 1, // Cuenta del Administrador/Coordinador
-                        'ip_address' => '127.0.0.1',
-                        'action' => "Cupos llenos. Alumno Aprobado CI: {$postulante->ci} con promedio {$postulante->promedio_general} quedó sin plaza.",
-                        'created_at' => now()
-                    ]);
-                }
-            }
-            
-            return $resumen;
-        });
-    }
+package "React Frontend" {
+  component "Calificar.jsx" as UI_Grid
 }
+
+package "Laravel Controllers" {
+  component "GruposController.php" as C_Grup
+}
+
+package "Laravel Services" {
+  component "GruposService.php" as S_Grup
+}
+
+package "Eloquent Models" {
+  component "Grupo.php" as M_Grup
+}
+
+database "PostgreSQL 18" {
+  [aulas] as T_Aulas
+  [grupos] as T_Grupos
+  [asignaciones_grupo] as T_AsigGrupo
+}
+
+' Dependencias de archivos
+UI_Grid ..> C_Grup : Iniciar distribución masiva
+C_Grup ..> S_Grup : Ejecutar asignación
+S_Grup ..> M_Grup : Crear grupo
+S_Grup --> T_Aulas : SELECT (Aulas libres)
+M_Grup --> T_Grupos : INSERT
+S_Grup --> T_AsigGrupo : INSERT (Mapeo Alumno-Grupo)
+@enduml
+```
+
+#### 4. Subsistema de Evaluación Académica y Reportes Inteligencia AI (`Paquete_Evaluacion` y `Paquete_Reportes_IA`)
+Este subsistema orquesta la subida de exámenes, la calificación estricta del CUP (ponderado y >=60 por materia), las pruebas del Simulacro, y el servicio de procesamiento de reportes por voz gobernados por Inteligencia Artificial:
+
+```plantuml
+@startuml ComponentesEvaluacionReportesIA
+skinparam backgroundColor #FEFEFE
+skinparam componentStyle uml2
+skinparam roundCorner 8
+
+package "React SPA Frontend" {
+  component "CargaMasiva.jsx" as UI_CSV
+  component "Welcome.jsx" as UI_Welcome
+  component "Dashboard.jsx" as UI_Dash
+}
+
+package "Laravel Controllers" {
+  component "AcademicoController.php" as C_Acad
+  component "AdmisionController.php" as C_Admi
+}
+
+package "Laravel Services" {
+  component "AcademicoService.php" as S_Acad
+  component "ReporteIAValidator.php" as S_IA
+}
+
+package "Eloquent Models" {
+  component "Examen.php" as M_Exam
+  component "NotaFinal.php" as M_Nota
+  component "PreguntaSimulacro.php" as M_Simu
+}
+
+database "PostgreSQL 18" {
+  [examenes] as T_Examenes
+  [notas_finales] as T_NotasFinales
+  [preguntas_simulacro] as T_Simulacro
+  [admisiones] as T_Admisiones
+}
+
+interface "OpenAI Whisper / GPT API" as API_AI
+
+' Flujo físico de datos de evaluación e IA
+UI_CSV ..> C_Acad : Cargar CSV de notas
+UI_Welcome ..> S_IA : Enviar audio de voz
+S_IA ..> API_AI : Procesar comando NLP
+C_Acad ..> S_Acad : Ejecutar promedio ponderado y estado
+S_Acad ..> M_Exam : Registrar notas exámenes
+S_Acad ..> M_Nota : Registrar promedio materia
+C_Admi ..> M_Simu : Obtener banco de preguntas
+UI_Dash ..> T_Admisiones : SELECT reportes
+
+M_Exam --> T_Examenes
+M_Nota --> T_NotasFinales
+M_Simu --> T_Simulacro
+@enduml
 ```
 
 ---
@@ -3287,9 +6428,20 @@ class AdmisionService
 
 Una vez finalizado el proceso de análisis, diseño y estructuración de la documentación técnica para el Sistema Web Inteligente de Gestión del Proceso de Admisión y Curso Preuniversitario (CUP) de la FICCT, se formulan las siguientes conclusiones académicas:
 
-1.  **Alineamiento Metodológico Riguroso (PUDS y UML):** Se logró completar de forma exhaustiva el ciclo de ingeniería bajo la metodología del Proceso Unificado de Desarrollo de Software. La estructuración lógica de los diagramas de casos de uso, la conceptualización estricta del modelo de análisis con clases de interfaz, control y entidad, la maduración del diseño con diagramas de secuencia transaccionales y el mapeo físico en DDL relacional demuestran que el sistema cuenta con un esqueleto técnico robusto, libre de inconsistencias estructurales, listo para ser implementado con total fidelidad.
-2.  **Mitigación Total de Ineficiencias de Negocio:** La especificación detallada de los algoritmos computacionales resuelve de raíz los problemas operativos históricos identificados en la FICCT. El cálculo determinista de grupos mediante la función matemática techo `CEIL(Total / 70)` garantiza que la facultad planifique sus recursos de aulas de forma exacta. Asimismo, la regla estricta de aprobación individual por materia (`materia >= 60`) erradica por completo la posibilidad de aprobaciones erróneas por fórmulas mal calculadas en planillas manuales de cálculo.
-3.  **Transaccionalidad Segura e Integridad ACID:** El diseño relacional del modelo físico de base de datos en PostgreSQL 18, dotado de restricciones de integridad referencial, checks relacionales, llaves primarias robustas e índices optimizados, asegura que el sistema sea capaz de soportar la carga masiva y concurrente de más de mil postulantes de forma segura. La implementación transaccional integrada a nivel de base de datos e impuesta por el ORM Eloquent garantiza que procesos hiper-críticos como la asignación meritocrática de cupos de carrera no sufran de inconsistencias lógicas ni colisiones por accesos concurrentes (Race Conditions).
+### Conclusión General (Cumplimiento del Objetivo General)
+Se cumplió satisfactoriamente con el objetivo general del proyecto al diseñar, analizar y estructurar de forma completa la implementación de una solución web inteligente e integrada bajo la metodología del **Proceso Unificado de Desarrollo de Software (PUDS)** y el estándar **UML**. A través de los artefactos de análisis de requerimientos, diagramas dinámicos de secuencia con control de excepciones, diagramas de componentes físicos organizados por capas y el diseño relacional robusto en PostgreSQL 18, se ha sentado la línea base para erradicar por completo los procesos manuales e ineficiencias del CUP de la FICCT, transformándolo en un sistema automatizado, auditable y de alto rendimiento.
+
+### Conclusiones Específicas (Alineación con los 10 Objetivos Específicos)
+1.  **Mapeo de Requisitos de Actores (Objetivo Específico 1):** Mediante la investigación activa de los flujos del CUP, se identificaron y catalogaron de forma exhaustiva los requisitos funcionales y no funcionales del sistema. Se mapearon los perfiles y responsabilidades físicas de los cuatro actores críticos (postulantes, docentes, coordinadores y administradores), garantizando que sus interacciones reales queden fielmente plasmadas en el alcance operativo.
+2.  **Modelado Metodológico y Casos de Uso (Objetivo Específico 2):** Se estructuró formalmente la fase de análisis y diseño arquitectónico bajo los lineamientos de PUDS. La separación estricta de las clases del modelo lógico en clases de frontera (`Frontera`), controladores (`Control`) y entidades de datos (`Entidad`) permitió aislar las complejas reglas de negocio académicas de las consideraciones de la interfaz y la persistencia de datos.
+3.  **Integridad de Datos e Integridad Referencial (Objetivo Específico 3):** Se diseñó un modelo relacional físico en PostgreSQL 18 compuesto por 18 tablas interconectadas. La inyección sistemática de llaves primarias, foráneas e índices optimizados garantiza una trazabilidad absoluta de la información de los postulantes, sus pagos, notas de exámenes, promedios y admisiones, eliminando de raíz las inconsistencias de datos relacionales en la FICCT.
+4.  **Arquitectura Física del Backend Laravel (Objetivo Específico 4):** Se definió con rigor de ingeniería de software la distribución física del servidor y backend sobre PHP 8.4 y Laravel 11. El mapeo en diagramas de componentes detalla la estructura física del proyecto Laravel (`app/`, `Services/`, `Models/`), lo que asegura transacciones ACID a nivel de Eloquent ORM y una lógica modular fácil de mantener y escalar.
+5.  **Capa de Presentación Reactiva (Objetivo Específico 5):** Se diseñó la arquitectura del lado del cliente como una Single Page Application (SPA) responsiva utilizando React 19 y Tailwind CSS. El empleo de componentes UI modulares e interactivos garantiza una experiencia fluida e intuitiva del estudiante, tanto en dispositivos móviles como de escritorio, eliminando la latencia en formularios de preinscripción.
+6.  **Implementación de Algoritmos Académicos (Objetivo Específico 6):** Se especificaron e implementaron en el flujo físico los algoritmos críticos del CUP. La distribución equitativa de aulas limitada estrictamente a 70 postulantes mediante la función techo `CEIL(Total / 70)` y la regla de aprobación ponderada individual por materia (`nota >= 60` por materia) eliminan el error humano y la discrecionalidad en planillas de cálculo tradicionales.
+7.  **Transaccionalidad en Pagos Condicionados (Objetivo Específico 7):** Se modeló e integró la pasarela física Stripe Sandbox como puente transaccional atómico y seguro para la matrícula. En cumplimiento con la regla de negocio, el flujo de pago se encuentra condicionado de forma estricta a la validación automática digital previa de los requisitos de bachiller del estudiante mediante las APIs de SEGIP y SEDUCA.
+8.  **Procesamiento Inteligente de Voz NLP (Objetivo Específico 8):** Se integró en la arquitectura el servicio de procesamiento inteligente por voz. Mediante el uso de modelos avanzados de lenguaje natural (OpenAI Whisper y GPT-4o) integrados en el servicio `ReporteIAValidator`, los coordinadores pueden realizar consultas complejas sobre promedios, rankings y cupos de carrera por medio de comandos de voz, obteniendo de forma instantánea gráficos interactivos en el dashboard.
+9.  **Asistente Virtual e Orientación al Postulante (Objetivo Específico 9):** Se diseñó el muelle interactivo de asistencia estudiantil incorporando un chatbot IA entrenado. Este módulo responde dudas en tiempo real sobre cronogramas, requisitos de bachillerato y estado del trámite de inscripción, reduciendo la saturación de los canales de atención físicos de la facultad y disminuyendo el abandono estudiantil.
+10. **Aseguramiento de Calidad y Gestión de Configuración (Objetivo Específico 10):** Se planificó un entorno riguroso de aseguramiento de calidad mediante pruebas unitarias y de integración automatizadas utilizando PHPUnit 11 y Vitest. El control físico de versiones y la gestión de la configuración se estructuraron sobre Git y GitHub, facilitando el establecimiento de líneas base (baselines) de versión estable correspondientes a cada fin de ciclo de iteración.
 
 ---
 
@@ -3305,12 +6457,17 @@ Con el propósito de asegurar el éxito de la implementación de software subsig
 
 # 10. BIBLIOGRAFÍA
 
-*   **Jacobson, I., Booch, G., & Rumbaugh, J.** (2000). *El Proceso Unificado de Desarrollo de Software*. Addison Wesley.
-*   **Larman, C.** (2003). *UML y Patrones: Una introducción al análisis y diseño orientado a objetos y al proceso unificado*. Prentice Hall.
+*   **Booch, G., Rumbaugh, J., & Jacobson, I.** (2006). *El Lenguaje Unificado de Modelado (UML): Manual de referencia* (2da ed.). Pearson Educación.
+*   **Inertia.js Team.** (2025). *Inertia.js: The Modern Monolith Framework for Laravel and React*. Recuperado de [inertiajs.com](https://inertiajs.com).
+*   **Jacobson, I., Booch, G., & Rumbaugh, J.** (2000). *El Proceso Unificado de Desarrollo de Software*. Addison Wesley / Pearson Educación.
+*   **Larman, C.** (2003). *UML y Patrones: Una introducción al análisis y diseño orientado a objetos y al proceso unificado* (2da ed.). Prentice Hall.
+*   **OpenAI Team.** (2025). *OpenAI Platform API Reference: GPT-4o and Whisper Voice Models*. OpenAI. Recuperado de [platform.openai.com/docs](https://platform.openai.com/docs).
+*   **Otwell, T.** (2025). *Laravel 11: The Elegant PHP Web Application Framework*. Laravel Core Team. Recuperado de [laravel.com/docs](https://laravel.com).
+*   **PHP Group.** (2025). *PHP 8.4 Reference Manual and Language Specifications*. Recuperado de [php.net/docs.php](https://www.php.net/docs.php).
+*   **PostgreSQL Global Development Group.** (2025). *PostgreSQL 18.0 Database System Documentation*. Recuperado de [postgresql.org/docs](https://www.postgresql.org/docs/).
 *   **Pressman, R. S.** (2010). *Ingeniería del Software: Un enfoque práctico* (7ma ed.). McGraw-Hill.
-*   **Otwell, T.** (2024). *Laravel Documentation: The Elegant PHP Web Framework*. Laravel Core Team. Recuperado de [laravel.com/docs](https://laravel.com).
-*   **Flanagan, D.** (2020). *JavaScript: The Definitive Guide* (7th ed.). O'Reilly Media.
-*   **PostgreSQL Global Development Group.** (2024). *PostgreSQL 16.0 Documentation*. Recuperado de [postgresql.org/docs](https://www.postgresql.org/docs/).
+*   **React Core Team.** (2025). *React 19 Documentation and Declarative User Interfaces*. Meta Open Source. Recuperado de [react.dev](https://react.dev).
+*   **Rumbaugh, J., Jacobson, I., & Booch, G.** (2007). *El Lenguaje Unificado de Modelado, UML: Manual de referencia*. Pearson Educación.
 
 ---
 
