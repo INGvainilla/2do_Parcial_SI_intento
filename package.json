@@ -1,0 +1,15 @@
+{
+  "name": "2do-parcial-si-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Monorepo para el 2do Parcial SI - Laravel Backend + React Frontend",
+  "scripts": {
+    "install:backend": "cd backend && composer install",
+    "install:frontend": "cd frontend && npm install",
+    "install:all": "npm run install:frontend && npm run install:backend",
+    "build:frontend": "cd frontend && npm run build",
+    "build:all": "npm run build:frontend",
+    "dev:backend": "cd backend && php artisan serve",
+    "dev:frontend": "cd frontend && npm run dev"
+  }
+}
