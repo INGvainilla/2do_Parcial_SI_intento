@@ -19,6 +19,7 @@ export default function NotasAdminPage() {
   const [selectedExamenNum, setSelectedExamenNum] = useState('1');
   const [editNota, setEditNota] = useState('');
   const [editMotivo, setEditMotivo] = useState('');
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const fetchCatalogos = async () => {
     try {
@@ -94,6 +95,7 @@ export default function NotasAdminPage() {
     setSelectedMateria(materia);
     setSelectedExamenNum(examNum);
     setEditNota(currentNota !== '-' ? currentNota : '');
+    setIsEditMode(currentNota !== '-');
     setEditMotivo('');
     setEditModal(true);
   };
@@ -115,6 +117,7 @@ export default function NotasAdminPage() {
         numero_examen: selectedExamenNum,
         nota: parseFloat(editNota),
         motivo: editMotivo,
+        es_edicion: isEditMode, // Bypass E2 exception only if it's genuinely an edit
       });
       setEditModal(false);
       // CU13 - Paso 8: B_Int --> Act : + ActualizarPlanillaNotas()
@@ -161,6 +164,26 @@ export default function NotasAdminPage() {
     }
   };
 
+  const runAsignacionCarreras = async () => {
+    // CU17 - Paso 1: Act -> B_Admi : + ejecutarAsignacion()
+    setLoading(true);
+    setMessage(null);
+    try {
+      // CU17 - Paso 2: B_Admi -> C_Asig : + asignacionMasiva()
+      const res = await api.post('/admisiones/procesar');
+      const stats = res.data.estadisticas;
+      setMessage({ 
+        type: 'success', 
+        text: `Asignación completada. Procesados: ${stats.procesados} | 1ra Opción: ${stats.admitidos_1ra_opcion} | 2da Opción: ${stats.admitidos_2da_opcion} | Pendientes: ${stats.pendientes_reasignacion}` 
+      });
+      fetchPlanilla();
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Error al ejecutar la asignación de carreras.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getNotaExamen = (postulante, materiaId, numExamen) => {
     const ex = postulante.examenes.find(
       (e) => e.materia_id === materiaId && e.numero_examen === numExamen
@@ -170,6 +193,10 @@ export default function NotasAdminPage() {
 
   const getPromedioFinal = (postulante, materiaId) => {
     const nf = postulante.notas_finales.find((n) => n.materia_id === materiaId);
+    // Mostrar observaciones (ej. "Incompleto - faltan 2 exámenes") si existe
+    if (nf && nf.observaciones) {
+      return `${nf.promedio} \n ${nf.observaciones}`;
+    }
     return nf ? nf.promedio : '-';
   };
 
@@ -181,7 +208,7 @@ export default function NotasAdminPage() {
           <span className="text-xs font-semibold text-blue-400 uppercase tracking-widest">Módulo Académico</span>
           <h1 className="text-2xl font-bold text-slate-100 mt-1">Gestión de Calificaciones del CUP</h1>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           <button 
             onClick={runCalculoPromedios}
             disabled={loading}
@@ -195,6 +222,13 @@ export default function NotasAdminPage() {
             className="px-4 py-2 rounded-xl bg-emerald-600/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold hover:bg-emerald-600/25 transition-all disabled:opacity-50 cursor-pointer"
           >
             Determinar Aprobados/Reprobados (CU16)
+          </button>
+          <button 
+            onClick={runAsignacionCarreras}
+            disabled={loading}
+            className="px-4 py-2 rounded-xl bg-purple-600/10 text-purple-400 border border-purple-500/20 text-xs font-semibold hover:bg-purple-600/25 transition-all disabled:opacity-50 cursor-pointer"
+          >
+            Asignar Carreras por Cupo (CU17)
           </button>
         </div>
       </div>

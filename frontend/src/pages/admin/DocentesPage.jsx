@@ -33,8 +33,8 @@ export default function DocentesPage() {
     }
   };
 
-  const asignarDocente = async (e) => {
-    e.preventDefault();
+  const asignarDocente = async (e, forzarEspecialidad = false) => {
+    if (e) e.preventDefault();
     setMessage('');
 
     // CU12 - Paso 1: Act -> B_Int : + AsignarDocente(docenteId, grupoId, materiaId)
@@ -46,6 +46,7 @@ export default function DocentesPage() {
         docente_id: parseInt(docenteId),
         grupo_id: parseInt(grupoId),
         materia_id: parseInt(materiaId),
+        confirmar_especialidad: forzarEspecialidad,
       });
 
       // CU12 - Paso 10: C_Ctrl --> B_Int : + RetornarExito()
@@ -53,7 +54,17 @@ export default function DocentesPage() {
       // CU12 - Paso 11: B_Int --> Act : + ActualizarMatrizDocente()
       fetchData();
     } catch (err) {
-      setMessage(err.response?.data?.message || 'Error en la asignación');
+      if (err.response?.status === 428 && err.response?.data?.requires_confirmation) {
+        // E3: Especialidad no coincide. Advertencia interactiva.
+        const confirmar = window.confirm(err.response.data.message);
+        if (confirmar) {
+          asignarDocente(null, true);
+        } else {
+          setMessage('Asignación cancelada por el usuario.');
+        }
+      } else {
+        setMessage(err.response?.data?.message || 'Error en la asignación');
+      }
     }
   };
 

@@ -283,13 +283,20 @@ class PostulanteController extends Controller
             ->first();
 
         if (!$postulante) {
+            // CU08 - No es recurrente: flujo normal de CU05
             return response()->json([
-                'message' => 'Postulante no encontrado.',
-            ], 404);
+                'encontrado' => false,
+                'message' => 'No se encontró registro previo con este CI.',
+            ]);
         }
 
-        // CU08 - Paso 5: C_Ctrl --> B_Int : + RetornarEstadoDuplicado(true) (retorna postulante recurrente)
-
-        return response()->json($postulante);
+        // CU08 - Paso 5: C_Ctrl --> B_Int : + RetornarEstadoDuplicado(true)
+        // Retornar datos del postulante recurrente para precargar en formulario
+        return response()->json([
+            'encontrado' => true,
+            'recurrente' => true,
+            'message' => "Se detectó un registro previo con este CI. Código de postulante: POST-{$postulante->id}",
+            'postulante' => $postulante,
+        ]);
     }
 }

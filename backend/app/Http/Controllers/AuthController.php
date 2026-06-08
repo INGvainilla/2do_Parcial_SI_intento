@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 
@@ -37,36 +38,71 @@ class AuthController extends Controller
             ]);
         }
 
+        // Verificar si la cuenta esta bloqueada temporalmente o inactiva
         if (! $user->active) {
             return response()->json([
-                'message' => 'Cuenta bloqueada. Contacte al administrador o use recuperar contrasena.',
+                'message' => 'Cuenta bloqueada permanentemente. Contacte al administrador o use recuperar contrasena.',
+            ], 423);
+        }
+
+        // Si la cuenta estaba bloqueada temporalmente pero el tiempo ya paso, la desbloqueamos
+        if ($user->bloqueado_hasta && $user->bloqueado_hasta <= now()) {
+            $user->update([
+                'intentos_fallidos' => 0,
+                'bloqueado_hasta' => null
+            ]);
+
+            BitacoraAcceso::create([
+                'user_id' => $user->id,
+                'ip_address' => $request->ip(),
+                'action' => 'DESBLOQUEO_AUTOMATICO',
+            ]);
+        }
+
+        if ($user->bloqueado_hasta && $user->bloqueado_hasta > now()) {
+            return response()->json([
+                'message' => 'Cuenta bloqueada temporalmente por multiples intentos fallidos. Intente de nuevo mas tarde o use recuperar contrasena.',
             ], 423);
         }
 
         if (! Hash::check($request->password, $user->password)) {
             // CU01 - Paso 5 (alt invalidas): Ctrl -> E_Usu : IncrementarIntentosFallidos()
-            // Registramos el intento fallido en la bitácora y bloqueamos la cuenta si supera el límite de 3
+            $user->increment('intentos_fallidos');
+
             BitacoraAcceso::create([
                 'user_id' => $user->id,
                 'ip_address' => $request->ip(),
                 'action' => 'LOGIN_FALLIDO',
             ]);
 
-            $intentosFallidos = BitacoraAcceso::where('user_id', $user->id)
-                ->where('action', 'LOGIN_FALLIDO')
-                ->where('created_at', '>=', now()->subMinutes(15))
-                ->count();
+            if ($user->intentos_fallidos >= 3) {
+                // Bloqueo temporal de 1 minuto (para pruebas)
+                $user->update([
+                    'bloqueado_hasta' => now()->addMinutes(1)
+                ]);
+                
+                BitacoraAcceso::create([
+                    'user_id' => $user->id,
+                    'ip_address' => $request->ip(),
+                    'action' => 'CUENTA_BLOQUEADA',
+                ]);
 
-            if ($intentosFallidos >= 3) {
-                $user->update(['active' => false]);
                 return response()->json([
-                    'message' => 'Cuenta bloqueada tras 3 intentos fallidos. Use recuperar contrasena.',
+                    'message' => 'Cuenta bloqueada temporalmente tras 3 intentos fallidos. Use recuperar contrasena.',
                 ], 423);
             }
 
             // CU01 - Paso 6 (alt invalidas): Ctrl --> UI : NotificarError("Credenciales incorrectas")
             throw ValidationException::withMessages([
-                'email' => ['Credenciales incorrectas.'],
+                'email' => ['Credenciales incorrectas. Intento ' . $user->intentos_fallidos . ' de 3.'],
+            ]);
+        }
+
+        // Resetear intentos fallidos y bloqueo al iniciar sesion exitosamente
+        if ($user->intentos_fallidos > 0 || $user->bloqueado_hasta !== null) {
+            $user->update([
+                'intentos_fallidos' => 0,
+                'bloqueado_hasta' => null
             ]);
         }
 
@@ -126,15 +162,37 @@ class AuthController extends Controller
         // CU03 - Paso 2: B_Int -> C_Ctrl : + forgotPassword(email)
         $request->validate(['email' => 'required|email']);
 
-        // Laravel's Password broker processes the remaining sequence:
         // CU03 - Paso 3: C_Ctrl -> E_Usu : + where('email', email)
         // CU03 - Paso 4: E_Usu --> C_Ctrl : + DatosExistencia
-        // CU03 - Paso 5: C_Ctrl -> C_Ctrl : + sendResetLink()
-        // CU03 - Paso 6: C_Ctrl --> B_Int : + ConfirmarEnvio()
-        Password::sendResetLink($request->only('email'));
+        // Verificamos internamente pero siempre retornamos mensaje genérico (anti-enumeración)
 
+        try {
+            // CU03 - Paso 5: C_Ctrl -> C_Ctrl : + sendResetLink()
+            $status = Password::sendResetLink($request->only('email'));
+
+            if ($status === Password::RESET_LINK_SENT) {
+                Log::info('CU03: Enlace de recuperación enviado exitosamente', [
+                    'email' => $request->email,
+                ]);
+            } else {
+                // Puede ser INVALID_USER, RESET_THROTTLED, etc.
+                Log::warning('CU03: No se pudo enviar enlace de recuperación', [
+                    'email' => $request->email,
+                    'status' => $status,
+                ]);
+            }
+        } catch (\Exception $e) {
+            // Error de SMTP, conexión, etc. - loggear pero NO exponer al usuario
+            Log::error('CU03: Error al enviar correo de recuperación', [
+                'email' => $request->email,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // CU03 - Paso 6: C_Ctrl --> B_Int : + ConfirmarEnvio()
+        // Mensaje genérico por seguridad (CU03 Excepción E1)
         return response()->json([
-            'message' => 'Si el correo existe, recibira un enlace de recuperacion.',
+            'message' => 'Si el correo existe, recibirá un enlace de recuperación.',
         ]);
     }
 

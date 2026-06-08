@@ -99,7 +99,7 @@ export default function SimulacroPage() {
             </div>
             <div className="flex justify-between items-center border-b border-slate-800 pb-3">
               <span className="text-slate-400 text-sm">Tiempo máximo permitido</span>
-              <span className="font-semibold text-slate-200">90 Minutos (1h 30m)</span>
+              <span className="font-semibold text-slate-200">60 Minutos (1 hora)</span>
             </div>
             <div className="flex justify-between items-center border-b border-slate-800 pb-3">
               <span className="text-slate-400 text-sm">Distribución temática</span>

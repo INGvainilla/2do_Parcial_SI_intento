@@ -31,7 +31,7 @@ export default function AdmisionesPage() {
       
       // Combinar postulantes con admisión
       const resAdmitidos = await api.get('/reportes/estructurado?tipo=admisiones');
-      setAdmitidos(resAdmitidos.data.postulantes || []);
+      setAdmitidos(resAdmitidos.data.data || []);
     } catch (err) {
       console.error(err);
     } finally {

@@ -11,6 +11,7 @@ use App\Http\Controllers\EvaluacionController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\NotificacionController;
+use App\Http\Controllers\AsignacionCarreraController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -77,8 +78,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/cupos', [ReporteController::class, 'configurarCupos']);
     });
 
-    // Busqueda y consulta (solo admin/coordinador)
-    Route::middleware('role:Administrador,Coordinador')->group(function () {
+    // Busqueda y consulta (solo admin/coordinador/docente)
+    Route::middleware('role:Administrador,Coordinador,Docente')->group(function () {
         Route::get('/postulantes', [PostulanteController::class, 'index']);
 
         // Planilla de Notas
@@ -88,7 +89,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/dashboard/estadisticas', [ReporteController::class, 'getEstadisticas']);
 
         // Procesar admisiones
-        Route::post('/admisiones/procesar', [ReporteController::class, 'asignacionMasiva']);
+        Route::post('/admisiones/procesar', [AsignacionCarreraController::class, 'asignacionMasiva']);
 
         // Reportes
         Route::get('/reportes/estructurado', [ReporteController::class, 'generarEstructurado']);

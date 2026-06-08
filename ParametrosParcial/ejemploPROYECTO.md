@@ -4947,7 +4947,7 @@ class "CTR_BOM" as CTR <<Control>> {
   --
   + guardarReceta(producto, ingredientes[])
   + verificarInsumosEnCatalogo()
-  + validarCoherenciaQuimica()
+  + validarCoherenciaComputacion()
   + insertarRecetaConDetalle()
 }
 

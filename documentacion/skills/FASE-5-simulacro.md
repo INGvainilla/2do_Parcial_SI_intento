@@ -272,7 +272,7 @@ class PreguntasSimulacroSeeder extends Seeder
                 ['Frecuencia se mide en?', ['Segundos', 'Hertz', 'Metros', 'Newton'], 'Hertz'],
                 ['Trabajo = Fuerza x ?', ['Tiempo', 'Distancia', 'Masa', 'Velocidad'], 'Distancia'],
             ],
-            'Quimica' => [
+            'Computacion' => [
                 ['Simbolo del sodio?', ['S', 'Na', 'So', 'Sd'], 'Na'],
                 ['Numero atomico del carbono?', ['4', '6', '8', '12'], '6'],
                 ['Formula del agua?', ['HO', 'H2O', 'H2O2', 'OH'], 'H2O'],

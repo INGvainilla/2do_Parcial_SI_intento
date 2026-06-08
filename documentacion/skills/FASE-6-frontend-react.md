@@ -467,7 +467,7 @@ export default function SimulacroPage() {
         <div className="bg-white p-8 rounded-xl shadow">
           <p className="text-gray-600 mb-2">40 preguntas (10 por materia)</p>
           <p className="text-gray-600 mb-2">Tiempo limite: 90 minutos</p>
-          <p className="text-gray-600 mb-6">Materias: Matematicas, Fisica, Quimica, Lenguaje</p>
+          <p className="text-gray-600 mb-6">Materias: Matematicas, Fisica, Computacion, Ingles</p>
           {error && <p className="text-red-600 mb-4">{error}</p>}
           <button onClick={iniciarSimulacro} disabled={loading}
             className="bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-800 disabled:opacity-50">

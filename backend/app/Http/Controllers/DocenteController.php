@@ -80,9 +80,13 @@ class DocenteController extends Controller
         $especialidadNorm = mb_strtolower($docente->especialidad);
         $materiaNorm = mb_strtolower($materia->nombre);
         if (strpos($especialidadNorm, $materiaNorm) === false && strpos($materiaNorm, $especialidadNorm) === false) {
-            return response()->json([
-                'message' => "Especialidad del docente ({$docente->especialidad}) no coincide con la materia ({$materia->nombre}).",
-            ], 422);
+            // E3: Especialidad no coincide
+            if (!$request->boolean('confirmar_especialidad')) {
+                return response()->json([
+                    'requires_confirmation' => true,
+                    'message' => "El docente {$docente->nombres} tiene especialidad en {$docente->especialidad} pero se le está asignando {$materia->nombre}. ¿Confirmar?",
+                ], 428); // Precondition Required
+            }
         }
 
         // Validar que no exista ya un docente asignado a esa materia en ese grupo

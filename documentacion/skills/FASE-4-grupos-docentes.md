@@ -458,7 +458,7 @@ class PostulantesTestSeeder extends Seeder
         }
 
         // Crear docentes
-        $especialidades = ['Matematicas', 'Fisica', 'Quimica', 'Lenguaje'];
+        $especialidades = ['Matematicas', 'Fisica', 'Computacion', 'Ingles'];
         foreach ($especialidades as $idx => $esp) {
             Docente::create([
                 'ci' => '500000' . ($idx + 1),

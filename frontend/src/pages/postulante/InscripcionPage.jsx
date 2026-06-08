@@ -39,13 +39,13 @@ export default function InscripcionPage() {
     setMessage('');
     try {
       const { data } = await api.get('/postulantes/buscar-ci', { params: { ci: ciValue } });
-      setPostulante(data);
-    } catch (err) {
-      if (err.response?.status === 404) {
-        setMessage('No se encontró ningún postulante registrado con el documento ingresado.');
+      if (data.encontrado && data.postulante) {
+        setPostulante(data.postulante);
       } else {
-        setMessage('Error al realizar la consulta.');
+        setMessage('No se encontró ningún postulante registrado con el documento ingresado.');
       }
+    } catch (err) {
+      setMessage('Error al realizar la consulta.');
     } finally {
       setLoading(false);
     }
@@ -77,17 +77,13 @@ export default function InscripcionPage() {
     setMessage('');
     try {
       const { data } = await api.get('/postulantes/buscar-ci', { params: { ci } });
-      if (data) {
-        setPostulante(data);
+      if (data.encontrado && data.postulante) {
+        setPostulante(data.postulante);
       } else {
         setMessage('No se encontró ningún postulante registrado con el documento ingresado.');
       }
     } catch (err) {
-      if (err.response?.status === 404) {
-        setMessage('No se encontró ningún postulante registrado con el documento ingresado.');
-      } else {
-        setMessage('Error al realizar la consulta.');
-      }
+      setMessage('Error al realizar la consulta.');
     } finally {
       setLoading(false);
     }

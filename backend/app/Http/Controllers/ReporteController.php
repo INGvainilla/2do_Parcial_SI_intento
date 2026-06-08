@@ -91,7 +91,7 @@ class ReporteController extends Controller
         // CU17 - Paso 4: E_Post --> C_Asig : + ListaAprobados
         // Se ordenan por promedio general descendente para asegurar meritocracia
         $aprobados = Postulante::where('gestion_id', $gestion->id)
-            ->where('estado', 'Aprobado')
+            ->whereIn('estado', ['Aprobado', 'Pendiente Reasignacion'])
             ->get()
             ->map(function ($postulante) {
                 // Calcular promedio general acumulado de las materias
@@ -225,10 +225,15 @@ class ReporteController extends Controller
 
         // CU22 - Paso 7: C_Rep -> E_Cupo : + get()
         // CU22 - Paso 8: E_Cupo --> C_Rep : + LlenadoCupos
-        $cuposCarreras = DB::table('cupos_gestion')
-            ->join('carreras', 'cupos_gestion.carrera_id', '=', 'carreras.id')
-            ->where('cupos_gestion.gestion_id', $gestion->id)
-            ->select('carreras.nombre', 'cupos_gestion.cupo_maximo', 'cupos_gestion.cupos_disponibles')
+        $cuposCarreras = DB::table('carreras')
+            ->leftJoin('cupos_gestion', function ($join) use ($gestion) {
+                $join->on('carreras.id', '=', 'cupos_gestion.carrera_id')
+                     ->where('cupos_gestion.gestion_id', '=', $gestion->id);
+            })
+            ->select('carreras.nombre', 
+                DB::raw('COALESCE(cupos_gestion.cupo_maximo, 0) as cupo_maximo'), 
+                DB::raw('COALESCE(cupos_gestion.cupos_disponibles, 0) as cupos_disponibles')
+            )
             ->get()
             ->map(function ($c) {
                 $c->ocupados = $c->cupo_maximo - $c->cupos_disponibles;

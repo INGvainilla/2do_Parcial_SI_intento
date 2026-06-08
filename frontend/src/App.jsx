@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import UsersPage from './pages/admin/UsersPage';
 import BusquedaPostulantesPage from './pages/admin/BusquedaPostulantesPage';
@@ -26,6 +27,7 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
           <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
             <Route path="/dashboard" element={<DashboardPage />} />
@@ -35,7 +37,7 @@ export default function App() {
               <ProtectedRoute roles={['Administrador']}><UsersPage /></ProtectedRoute>
             } />
             <Route path="/admin/postulantes" element={
-              <ProtectedRoute roles={['Administrador', 'Coordinador']}><BusquedaPostulantesPage /></ProtectedRoute>
+              <ProtectedRoute roles={['Administrador', 'Coordinador', 'Docente']}><BusquedaPostulantesPage /></ProtectedRoute>
             } />
             <Route path="/admin/grupos" element={
               <ProtectedRoute roles={['Administrador', 'Coordinador']}><GruposPage /></ProtectedRoute>

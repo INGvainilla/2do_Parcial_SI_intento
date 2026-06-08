@@ -23,13 +23,14 @@ class SimulacroController extends Controller
         $materias = Materia::all();
 
         if ($materias->count() < 4) {
+            // E1: Banco de preguntas vacío o incompleto
             return response()->json([
-                'message' => 'Configuracion incompleta: se necesitan al menos 4 materias.',
+                'message' => 'El módulo de práctica no está disponible en este momento',
             ], 422);
         }
 
         $preguntas = collect();
-        $materiasFaltantes = [];
+        $incompleto = false;
 
         foreach ($materias as $materia) {
             // CU23 - Paso 3: C_Ctrl -> E_Preg : + ObtenerBancoPreguntas()
@@ -40,8 +41,8 @@ class SimulacroController extends Controller
                 ->get();
 
             if ($preguntasMateria->count() < self::PREGUNTAS_POR_MATERIA) {
-                $materiasFaltantes[] = "{$materia->nombre} (tiene {$preguntasMateria->count()}, necesita " . self::PREGUNTAS_POR_MATERIA . ")";
-                continue;
+                $incompleto = true;
+                break;
             }
 
             // Mapear sin revelar respuesta_correcta
@@ -58,9 +59,10 @@ class SimulacroController extends Controller
             $preguntas = $preguntas->merge($preguntasFormateadas);
         }
 
-        if (! empty($materiasFaltantes)) {
+        if ($incompleto) {
+            // E1: Banco de preguntas vacío o incompleto
             return response()->json([
-                'message' => 'No hay suficientes preguntas en: ' . implode(', ', $materiasFaltantes),
+                'message' => 'El módulo de práctica no está disponible en este momento',
             ], 422);
         }
 
@@ -68,7 +70,7 @@ class SimulacroController extends Controller
         return response()->json([
             'simulacro' => [
                 'total_preguntas' => $preguntas->count(),
-                'tiempo_limite_minutos' => 90,
+                'tiempo_limite_minutos' => 60,
                 'materias' => $materias->pluck('nombre'),
                 'preguntas_por_materia' => self::PREGUNTAS_POR_MATERIA,
             ],

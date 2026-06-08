@@ -518,8 +518,8 @@ class CatalogosSeeder extends Seeder
         $materias = [
             ['nombre' => 'Matematicas', 'codigo' => 'MAT'],
             ['nombre' => 'Fisica', 'codigo' => 'FIS'],
-            ['nombre' => 'Quimica', 'codigo' => 'QUI'],
-            ['nombre' => 'Lenguaje', 'codigo' => 'LEN'],
+            ['nombre' => 'Computacion', 'codigo' => 'COM'],
+            ['nombre' => 'Ingles', 'codigo' => 'ING'],
         ];
         foreach ($materias as $m) {
             Materia::create($m);

@@ -38,17 +38,25 @@ class EvaluacionController extends Controller
 
         $user = $request->user();
 
-        $result = DB::transaction(function () use ($validated, $user) {
-            // Buscar examen anterior para auditoría
-            $examen = Examen::where('postulante_id', $validated['postulante_id'])
-                ->where('materia_id', $validated['materia_id'])
-                ->where('numero_examen', $validated['numero_examen'])
-                ->first();
+        // CU13 Excepción E2: Examen ya calificado
+        $examen = Examen::where('postulante_id', $validated['postulante_id'])
+            ->where('materia_id', $validated['materia_id'])
+            ->where('numero_examen', $validated['numero_examen'])
+            ->first();
 
-            $notaAnterior = $examen ? $examen->nota : null;
+        $esEdicion = $request->boolean('es_edicion');
 
+        if ($examen && !$esEdicion) {
+            return response()->json([
+                'message' => 'Este examen ya fue registrado. Use la función de edición para modificarlo.',
+            ], 422);
+        }
+
+        $notaAnterior = $examen ? $examen->nota : null;
+
+        $result = DB::transaction(function () use ($validated, $user, $notaAnterior) {
             // CU13 - Paso 3: C_Ctrl -> E_Exam : + update(nuevaNota)
-            $examen = Examen::updateOrCreate(
+            $examenGuardado = Examen::updateOrCreate(
                 [
                     'postulante_id' => $validated['postulante_id'],
                     'materia_id' => $validated['materia_id'],
@@ -60,7 +68,7 @@ class EvaluacionController extends Controller
             );
 
             // CU13 - Paso 4: C_Ctrl -> C_Ctrl : + RecalcularPromedio()
-            $promedio = $this->calcularPromedioMateria($validated['postulante_id'], $validated['materia_id']);
+            $resultadoPromedio = $this->calcularPromedioMateria($validated['postulante_id'], $validated['materia_id']);
 
             // CU13 - Paso 5: C_Ctrl -> E_Nota : + update(promedio)
             NotaFinal::updateOrCreate(
@@ -69,21 +77,25 @@ class EvaluacionController extends Controller
                     'materia_id' => $validated['materia_id'],
                 ],
                 [
-                    'promedio' => $promedio,
-                    'estado' => $promedio >= 60 ? 'APROBADO' : 'REPROBADO',
+                    'promedio' => $resultadoPromedio['promedio'],
+                    'estado' => $resultadoPromedio['promedio'] >= 60 ? 'APROBADO' : 'REPROBADO',
+                    'observaciones' => $resultadoPromedio['observaciones'],
                 ]
             );
 
+            // Recalcular estado global del postulante en tiempo real (CU16 en tiempo real)
+            $this->actualizarEstadoDeUnPostulante($validated['postulante_id']);
+
             // CU13 - Paso 6: C_Ctrl -> E_Aud : + create(log)
             AuditoriaNota::create([
-                'examen_id' => $examen->id,
+                'examen_id' => $examenGuardado->id,
                 'usuario_modificador_id' => $user->id,
                 'nota_anterior' => $notaAnterior,
                 'nota_nueva' => $validated['nota'],
                 'motivo' => $validated['motivo'],
             ]);
 
-            return $examen;
+            return $examenGuardado;
         });
 
         // CU13 - Paso 7: C_Ctrl --> B_Int : + RetornarExito()
@@ -153,28 +165,27 @@ class EvaluacionController extends Controller
                     continue;
                 }
 
-                // Buscar examen anterior para auditoría
+                // CU14 Excepción E2: Omitir duplicados
                 $examenPrevio = Examen::where('postulante_id', $postulante->id)
                     ->where('materia_id', $materiaId)
                     ->where('numero_examen', $numeroExamen)
                     ->first();
 
-                $notaAnterior = $examenPrevio ? $examenPrevio->nota : null;
+                if ($examenPrevio) {
+                    $errores[] = "Línea " . ($index + 2) . ": Se detectaron notas duplicadas para el CI {$ci} que serán omitidas.";
+                    continue;
+                }
 
                 // CU14 - Paso 5: C_Eval -> E_Exam : + create(nota)
-                $examen = Examen::updateOrCreate(
-                    [
-                        'postulante_id' => $postulante->id,
-                        'materia_id' => $materiaId,
-                        'numero_examen' => $numeroExamen,
-                    ],
-                    [
-                        'nota' => $nota,
-                    ]
-                );
+                $examen = Examen::create([
+                    'postulante_id' => $postulante->id,
+                    'materia_id' => $materiaId,
+                    'numero_examen' => $numeroExamen,
+                    'nota' => $nota,
+                ]);
 
                 // CU14 - Paso 6: C_Eval -> C_Eval : + CalcularPromedioPonderado()
-                $promedio = $this->calcularPromedioMateria($postulante->id, $materiaId);
+                $resultadoPromedio = $this->calcularPromedioMateria($postulante->id, $materiaId);
 
                 // CU14 - Paso 7: C_Eval -> E_Nota : + update(promedio, estado)
                 NotaFinal::updateOrCreate(
@@ -183,16 +194,20 @@ class EvaluacionController extends Controller
                         'materia_id' => $materiaId,
                     ],
                     [
-                        'promedio' => $promedio,
-                        'estado' => $promedio >= 60 ? 'APROBADO' : 'REPROBADO',
+                        'promedio' => $resultadoPromedio['promedio'],
+                        'estado' => $resultadoPromedio['promedio'] >= 60 ? 'APROBADO' : 'REPROBADO',
+                        'observaciones' => $resultadoPromedio['observaciones'],
                     ]
                 );
+
+                // Recalcular estado global del postulante en tiempo real (CU16 en tiempo real)
+                $this->actualizarEstadoDeUnPostulante($postulante->id);
 
                 // CU14 - Paso 8: C_Eval -> E_Aud : + create(log)
                 AuditoriaNota::create([
                     'examen_id' => $examen->id,
                     'usuario_modificador_id' => $user->id,
-                    'nota_anterior' => $notaAnterior,
+                    'nota_anterior' => null, // Ya validamos que es nuevo registro
                     'nota_nueva' => $nota,
                     'motivo' => 'Carga masiva CSV',
                 ]);
@@ -229,7 +244,7 @@ class EvaluacionController extends Controller
                 // CU15 - Paso 3: C_Ctrl -> E_Exam : + where('postulante_id', id)
                 // CU15 - Paso 4: E_Exam --> C_Ctrl : + NotasMateria
                 // CU15 - Paso 5: C_Ctrl -> C_Ctrl : + AplicarFormulaPonderacion()
-                $promedio = $this->calcularPromedioMateria($postulante->id, $materia->id);
+                $resultadoPromedio = $this->calcularPromedioMateria($postulante->id, $materia->id);
 
                 // CU15 - Paso 6: C_Ctrl -> E_Nota : + updateOrCreate(promedio)
                 NotaFinal::updateOrCreate(
@@ -238,8 +253,9 @@ class EvaluacionController extends Controller
                         'materia_id' => $materia->id,
                     ],
                     [
-                        'promedio' => $promedio,
-                        'estado' => $promedio >= 60 ? 'APROBADO' : 'REPROBADO',
+                        'promedio' => $resultadoPromedio['promedio'],
+                        'estado' => $resultadoPromedio['promedio'] >= 60 ? 'APROBADO' : 'REPROBADO',
+                        'observaciones' => $resultadoPromedio['observaciones'],
                     ]
                 );
                 $calculados++;
@@ -264,49 +280,18 @@ class EvaluacionController extends Controller
     public function determinarEstadosGlobal(Request $request): JsonResponse
     {
         // CU16 - Paso 2: B_Console -> C_Ctrl : + evaluarEstados()
-        $postulantes = Postulante::where('estado', 'En Evaluacion')->get();
-        $materiasCount = Materia::count();
+        $postulantes = Postulante::whereIn('estado', ['En Evaluacion', 'Aprobado', 'Reprobado'])->get();
         $aprobados = 0;
         $reprobados = 0;
 
         foreach ($postulantes as $postulante) {
-            // CU16 - Paso 3: C_Ctrl -> E_Nota : + get()
-            // CU16 - Paso 4: E_Nota --> C_Ctrl : + PromediosCalculados
-            $notasFinales = NotaFinal::where('postulante_id', $postulante->id)->get();
-
-            // CU16 - Paso 5: C_Ctrl -> C_Ctrl : + ValidarUmbral(>=60)
-            $tieneTodasLasMaterias = $notasFinales->count() === $materiasCount;
-            $aproboTodas = true;
-
-            foreach ($notasFinales as $nf) {
-                if ($nf->promedio < 60) {
-                    $aproboTodas = false;
-                    break;
-                }
-            }
-
-            $nuevoEstado = ($tieneTodasLasMaterias && $aproboTodas) ? 'Aprobado' : 'Reprobado';
-
-            // CU16 - Paso 6: C_Ctrl -> E_Post : + update(['estado' => estado])
-            $postulante->update(['estado' => $nuevoEstado]);
-
-            if ($nuevoEstado === 'Aprobado') {
+            $this->actualizarEstadoDeUnPostulante($postulante->id);
+            
+            $postulanteFresh = $postulante->fresh();
+            if ($postulanteFresh->estado === 'Aprobado') {
                 $aprobados++;
-                // Sembramos notificación
-                \App\Models\Notificacion::create([
-                    'usuario_id' => $postulante->user_id ?? 1, // Fallback a user admin
-                    'tipo_evento' => 'Resultado Final',
-                    'mensaje' => "¡Felicidades! Has sido APROBADO en el CUP. Espera tu asignación de carrera.",
-                    'estado' => 'NO_LEIDA',
-                ]);
             } else {
                 $reprobados++;
-                \App\Models\Notificacion::create([
-                    'usuario_id' => $postulante->user_id ?? 1,
-                    'tipo_evento' => 'Resultado Final',
-                    'mensaje' => "El resultado de tu proceso en el CUP es REPROBADO. Si consideras que es un error, contacta a Secretaría.",
-                    'estado' => 'NO_LEIDA',
-                ]);
             }
         }
 
@@ -319,6 +304,59 @@ class EvaluacionController extends Controller
     }
 
     /**
+     * Helper para actualizar el estado global de un postulante de forma atómica.
+     * Evalúa que las 4 materias tengan nota final y estén aprobadas (>= 60).
+     */
+    private function actualizarEstadoDeUnPostulante($postulanteId): void
+    {
+        $postulante = Postulante::find($postulanteId);
+        if (!$postulante) return;
+
+        $materiasCount = Materia::count();
+        $notasFinales = NotaFinal::with('materia')->where('postulante_id', $postulanteId)->get();
+
+        $tieneTodasLasMaterias = $notasFinales->count() === $materiasCount;
+        $aproboTodas = true;
+        $materiasReprobadas = [];
+
+        foreach ($notasFinales as $nf) {
+            if ($nf->promedio < 60) {
+                $aproboTodas = false;
+                if ($nf->materia) {
+                    $materiasReprobadas[] = $nf->materia->nombre;
+                }
+            }
+        }
+
+        $nuevoEstado = ($tieneTodasLasMaterias && $aproboTodas) ? 'Aprobado' : 'Reprobado';
+        $estadoAnterior = $postulante->estado;
+
+        if ($estadoAnterior === 'En Evaluacion' || $estadoAnterior !== $nuevoEstado) {
+            $postulante->update(['estado' => $nuevoEstado]);
+
+            if ($nuevoEstado === 'Aprobado') {
+                \App\Models\Notificacion::create([
+                    'usuario_id' => $postulante->user_id ?? 1,
+                    'tipo_evento' => 'Resultado Final',
+                    'mensaje' => "¡Felicidades! Has sido APROBADO en el CUP. Espera tu asignación de carrera.",
+                    'estado' => 'NO_LEIDA',
+                ]);
+            } else {
+                $nombresMaterias = count($materiasReprobadas) > 0 
+                    ? implode(', ', $materiasReprobadas) 
+                    : 'Aún falta evaluación completa';
+
+                \App\Models\Notificacion::create([
+                    'usuario_id' => $postulante->user_id ?? 1,
+                    'tipo_evento' => 'Resultado Final',
+                    'mensaje' => "El resultado de tu proceso en el CUP es REPROBADO. Materias no aprobadas: {$nombresMaterias}. Si consideras que es un error, contacta a Secretaría.",
+                    'estado' => 'NO_LEIDA',
+                ]);
+            }
+        }
+    }
+
+    /**
      * Helper para calcular el promedio ponderado de una materia para un postulante
      * Ponderaciones: Examen 1 (30%), Examen 2 (30%), Examen 3 (40%)
      */
@@ -327,7 +365,7 @@ class EvaluacionController extends Controller
         return $this->calcularPromedioMateria($postulanteId, $materiaId);
     }
 
-    private function calcularPromedioMateria($postulanteId, $materiaId): float
+    private function calcularPromedioMateria($postulanteId, $materiaId): array
     {
         $examenes = Examen::where('postulante_id', $postulanteId)
             ->where('materia_id', $materiaId)
@@ -344,7 +382,16 @@ class EvaluacionController extends Controller
             }
         }
 
-        return round($promedio, 2);
+        $faltantes = 3 - $examenes->count();
+        $observaciones = null;
+        if ($faltantes > 0) {
+            $observaciones = "(Incompleto — faltan {$faltantes} exámenes)";
+        }
+
+        return [
+            'promedio' => round($promedio, 2),
+            'observaciones' => $observaciones,
+        ];
     }
 
     /**

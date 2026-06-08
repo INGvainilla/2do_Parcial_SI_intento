@@ -8,7 +8,13 @@ class NotaFinal extends Model
 {
     public $timestamps = false;
     protected $table = 'notas_finales';
-    protected $fillable = ['postulante_id', 'materia_id', 'promedio', 'estado'];
+    protected $fillable = [
+        'postulante_id',
+        'materia_id',
+        'promedio',
+        'estado',
+        'observaciones',
+    ];
 
     public function postulante()
     {

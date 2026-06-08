@@ -13,7 +13,7 @@ export default function DashboardPage() {
   const fetchStats = async () => {
     // CU22 - Paso 1: Act -> B_Dash : + AbrirDashboard()
     try {
-      if (['Administrador', 'Coordinador'].includes(user?.role)) {
+      if (['Administrador', 'Coordinador', 'Docente'].includes(user?.role)) {
         // CU22 - Paso 2: B_Dash -> C_Rep : + getEstadisticas()
         const res = await api.get('/dashboard/estadisticas');
         // CU22 - Paso 9: C_Rep --> B_Dash : + EnviarDatosEstadisticos()
@@ -27,9 +27,11 @@ export default function DashboardPage() {
         const ci = userRes.data.ci;
         if (ci) {
           const postRes = await api.get(`/postulantes/buscar-ci?ci=${ci}`);
-          // Cargar el detalle completo
-          const detailRes = await api.get(`/postulantes/${postRes.data.id}`);
-          setPostulanteInfo(detailRes.data);
+          if (postRes.data.encontrado && postRes.data.postulante) {
+            // Cargar el detalle completo
+            const detailRes = await api.get(`/postulantes/${postRes.data.postulante.id}`);
+            setPostulanteInfo(detailRes.data);
+          }
         }
       }
     } catch (err) {

@@ -68,14 +68,14 @@ class PreguntasSimulacroSeeder extends Seeder
         ];
 
         foreach ($materias as $materia) {
-            $nombreMateria = $materia->nombre;
-            if ($nombreMateria === 'Computacion') {
+            $nombreMateria = strtoupper($materia->nombre);
+            if ($nombreMateria === 'COMPUTACION' || $nombreMateria === 'COMPUTACIÓN') {
                 $preguntas = $banco['Computacion'] ?? [];
-            } elseif ($nombreMateria === 'Matematicas') {
+            } elseif ($nombreMateria === 'MATEMATICAS' || $nombreMateria === 'MATEMÁTICAS') {
                 $preguntas = $banco['Matematicas'] ?? [];
-            } elseif ($nombreMateria === 'Fisica') {
+            } elseif ($nombreMateria === 'FISICA' || $nombreMateria === 'FÍSICA') {
                 $preguntas = $banco['Fisica'] ?? [];
-            } elseif ($nombreMateria === 'Ingles') {
+            } elseif ($nombreMateria === 'INGLES' || $nombreMateria === 'INGLÉS') {
                 $preguntas = $banco['Ingles'] ?? [];
             } else {
                 $preguntas = [];
