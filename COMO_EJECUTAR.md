@@ -146,19 +146,14 @@ php artisan migrate
 
 Este comando ejecuta las **33 migraciones** del proyecto y crea **32 tablas** en PostgreSQL (ver listado abajo).
 
-### 5. Poblar datos de prueba (opcional pero recomendado)
+### 5. Poblar la base de datos (Obligatorio)
 
-Para cargar los 1.600+ postulantes, docentes, carreras, gestiones y cuentas administrativas:
+La base de datos debe ser poblada utilizando los scripts SQL proporcionados en la carpeta `BASE_DE_DATOS`. Estos archivos contienen la población completa de postulantes, grupos, docentes, etc.
 
-```bash
-php artisan db:seed
-```
+Ejecuta estos archivos directamente en tu gestor de base de datos PostgreSQL en el siguiente orden:
 
-O, si quieres **reconstruir todo desde cero** (borra datos existentes):
-
-```bash
-php artisan migrate:fresh --seed
-```
+1. **Estructura base:** Ejecuta `BASE_DE_DATOS/FICCT_v2.sql`
+2. **Población de datos:** Ejecuta `BASE_DE_DATOS/INSERTS_POBLACION_COMPLETA.sql`
 
 ### 6. Verificar que las tablas existen
 
@@ -318,9 +313,9 @@ Ejecutadas en orden por `php artisan migrate`:
 
 ---
 
-## Credenciales de acceso por defecto
+### Cuentas pre-configuradas
 
-Tras `migrate:fresh --seed` o `db:seed`, usa estas cuentas en **http://localhost:5173**:
+Tras poblar la base de datos con los scripts SQL, usa estas cuentas en **http://localhost:5173**:
 
 | Rol | Correo | Contraseña |
 |-----|--------|------------|

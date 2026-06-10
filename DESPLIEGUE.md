@@ -67,10 +67,10 @@ Una vez que el despliegue finalice con éxito, puedes ejecutar los comandos de L
 php artisan migrate --force
 ```
 
-### Generar Datos de Prueba (500+ Postulantes, grupos, docentes, etc.):
-```bash
-php artisan db:seed --force
-```
+### Poblar Datos de Prueba (Población Completa):
+En lugar de usar `db:seed`, ejecuta directamente en tu base de datos (usando pgAdmin o DBeaver) los archivos ubicados en la carpeta `BASE_DE_DATOS` en este orden:
+1. `BASE_DE_DATOS/FICCT_v2.sql`
+2. `BASE_DE_DATOS/INSERTS_POBLACION_COMPLETA.sql`
 
 ---
 
